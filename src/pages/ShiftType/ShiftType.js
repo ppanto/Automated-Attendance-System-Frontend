@@ -10,9 +10,7 @@ import ShiftTypeForm from "./ShiftTypeForm";
 import AddIcon from '@material-ui/icons/Add';
 import CloseIcon from '@material-ui/icons/Close';
 import ConfirmDialog from "../../components/ConfirmDialog";
-
-const baseUrl = 'http://localhost:8080/api/';
-const fullUrl = `${baseUrl}shift-type/`
+import {ShiftTypeService} from "../../services/ShiftTypeService";
 
 const useStyles = makeStyles(theme => ({
     pageContent: {
@@ -49,13 +47,12 @@ export default function LeaveType() {
     const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' })
     
     const fetchItems = async () => {
-        const data = await fetch(fullUrl, { method: 'GET'});
-        let jsonData = await data.json();
-        jsonData.forEach(shift => {
+        const data = await ShiftTypeService.get()
+        data.forEach(shift => {
             shift.startTimeAsString = `${shift.startTime.slice(0,5)}`;
             shift.endTimeAsString = `${shift.endTime.slice(0,5)}`;
         })
-        setRecords(jsonData);
+        setRecords(data);
       };
 
     const {
@@ -80,37 +77,25 @@ export default function LeaveType() {
     const addOrEdit = async (data, resetForm) => {
         let response = null
         if (data.id === 0){
-            response = await fetch(fullUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
+            response = await ShiftTypeService.createUpdate(0, data);
         }
         resetForm()
         setOpenPopup(false)
-        let myRecords = records.filter(record => record.id!==data.id)
-        let currentRecord = await response.json()
-        currentRecord.startTimeAsString = `${currentRecord.startTime.slice(0,5)}`;
-        currentRecord.endTimeAsString = `${currentRecord.endTime.slice(0,5)}`;
-        myRecords.push(currentRecord)
-        setRecords(myRecords)
+        if(response != null){
+            let myRecords = records.filter(record => record.id!==data.id)
+            response.startTimeAsString = `${response.startTime.slice(0,5)}`;
+            response.endTimeAsString = `${response.endTime.slice(0,5)}`;
+            myRecords.push(response)
+            setRecords(myRecords)
+        }
     }
-
-    // const openInPopup = item => {
-    //     setRecordForEdit(item)
-    //     setOpenPopup(true)
-    // }
 
     const onDelete = async (id) => {
         setConfirmDialog({
             ...confirmDialog,
             isOpen: false
         })
-        await fetch(`${fullUrl}${id}`, {
-            method: 'DELETE'
-        });
+        await ShiftTypeService.deleteObj(id);
         setRecords(records.filter(record => record.id!==id));
     }
 

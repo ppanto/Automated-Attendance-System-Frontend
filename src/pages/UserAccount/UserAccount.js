@@ -9,8 +9,7 @@ import Popup from "../../components/Popup";
 import UserAccountForm from "./UserAccountForm";
 import AddIcon from '@material-ui/icons/Add';
 import ErrorIcon from '@material-ui/icons/Error';
-
-const baseUrl = 'http://localhost:8080/api/user/';
+import {UserAccountService} from "../../services/UserAccountService";
 
 const useStyles = makeStyles(theme => ({
     pageContent: {
@@ -47,10 +46,8 @@ export default function UserAccount() {
     const [openPopup, setOpenPopup] = useState(false)
     
     const fetchItems = async () => {
-        const data = await fetch(baseUrl, { method: 'GET'});
-        let jsonData = await data.json();
-        setRecords(jsonData);
-      };
+        setRecords(await UserAccountService.get());
+    };
 
     const {
         TblContainer,
@@ -74,27 +71,20 @@ export default function UserAccount() {
     const addOrEdit = async (data, resetForm) => {
         let response = null
         if (data.id === 0){
-            response = await fetch(baseUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
+            response = await UserAccountService.createUpdate(0, data);
         }
         resetForm()
         setRecordForEdit(null)
         setOpenPopup(false)
-        let myRecords = records.filter(record => record.id!==data.id)
-        let currentRecord = await response.json()
-        myRecords.push(currentRecord)
-        setRecords(myRecords)
+        if(response != null){
+            let myRecords = records.filter(record => record.id!==data.id)
+            myRecords.push(response)
+            setRecords(myRecords)
+        }
     }
 
     const onDelete = async (id) => {
-        await fetch(`${baseUrl}toggleActive/${id}`, {
-            method: 'POST'
-        });
+        await UserAccountService.deleteObj(id);
         let updatedRecord = null;
         let updatedRecords = [];
         records.forEach(record => {

@@ -11,9 +11,7 @@ import AddIcon from '@material-ui/icons/Add';
 import EditOutlinedIcon from '@material-ui/icons/EditOutlined';
 import CloseIcon from '@material-ui/icons/Close';
 import ConfirmDialog from "../../components/ConfirmDialog";
-
-const baseUrl = 'http://localhost:8080/api/';
-const fullUrl = `${baseUrl}leave-type/`
+import {LeaveTypeService} from "../../services/LeaveTypeService";
 
 const useStyles = makeStyles(theme => ({
     pageContent: {
@@ -48,10 +46,8 @@ export default function LeaveType() {
     const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' })
     
     const fetchItems = async () => {
-        const data = await fetch(fullUrl, { method: 'GET'});
-        let jsonData = await data.json();
-        setRecords(jsonData);
-      };
+        setRecords(await LeaveTypeService.get());
+    };
 
     const {
         TblContainer,
@@ -73,32 +69,15 @@ export default function LeaveType() {
     }
 
     const addOrEdit = async (data, resetForm) => {
-        let response = null
-        if (data.id === 0){
-            response = await fetch(fullUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-        }
-        else{
-            response = await fetch(`${fullUrl}${data.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({'name':data.name})
-            });
-        }
+        let response = await LeaveTypeService.createUpdate(data.id, data);
         resetForm()
         setRecordForEdit(null)
         setOpenPopup(false)
-        let myRecords = records.filter(record => record.id!==data.id)
-        let currentRecord = await response.json()
-        myRecords.push(currentRecord)
-        setRecords(myRecords)
+        if(response != null){
+            let myRecords = records.filter(record => record.id!==data.id)
+            myRecords.push(response)
+            setRecords(myRecords)
+        }
     }
 
     const openInPopup = item => {
@@ -111,9 +90,7 @@ export default function LeaveType() {
             ...confirmDialog,
             isOpen: false
         })
-        await fetch(`${fullUrl}${id}`, {
-            method: 'DELETE'
-        });
+        await LeaveTypeService.deleteObj(id);
         setRecords(records.filter(record => record.id!==id));
     }
 

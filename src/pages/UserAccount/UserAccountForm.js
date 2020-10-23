@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Grid, } from '@material-ui/core';
 import Controls from "../../components/controls/Controls";
 import { useForm, Form } from '../../components/useForm';
+import {EmployeeService} from "../../services/EmployeeService";
 
 const initialFValues = {
     id: 0,
@@ -11,16 +12,13 @@ const initialFValues = {
 }
 
 export default function DepartmentForm(props) {
-    const baseUrl = 'http://localhost:8080/api/';
-
     const [personnel, setPersonnel] = useState([]);
 
     useEffect(() => {
         getRequiredData();
     }, [])
     const getRequiredData = async () => {
-        const data = await fetch(`${baseUrl}personnel/simple/filtered/no-account`, { method: 'GET'});
-        setPersonnel(await data.json());
+        setPersonnel(await EmployeeService.getSimpleFilteredNoAccount());
     }
 
     const { addOrEdit, recordForEdit } = props

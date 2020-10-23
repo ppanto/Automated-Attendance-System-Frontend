@@ -7,7 +7,8 @@ export const EmployeeService = {
     get,
     createUpdate,
     deleteObj,
-    postImage
+    postImage,
+    getSimpleFilteredNoAccount
 }
 
 async function get(){
@@ -79,4 +80,17 @@ async function postImage(imageData, employeeId){
             password: userObj.password
         }
     });
+}
+async function getSimpleFilteredNoAccount(){
+    const userObj = AuthService.getLoggedInUserObject();
+    return await axios({
+        method: 'GET',
+        url: `${apiPath}/simple/filtered/no-account`,
+        auth:{
+            username: userObj.username,
+            password: userObj.password
+        }
+    })
+    .then((response) => {return response.data})
+    .catch(() => {return []});
 }
