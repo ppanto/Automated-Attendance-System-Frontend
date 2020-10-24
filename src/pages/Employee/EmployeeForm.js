@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Grid, } from '@material-ui/core';
 import Controls from "../../components/controls/Controls";
 import { useForm, Form } from '../../components/useForm';
-import {DepartmentService} from "../../services/DepartmentService";
-import {TitleService} from "../../services/TitleService";
+import {ApiService} from "../../services/ApiService";
 
 const genderItems = [
     { id: 'Male', title: 'Male' },
@@ -70,8 +69,8 @@ export default function EmployeeForm(props) {
         getRequiredData();
     }, [])
     const getRequiredData = async () => {
-        setTitles(await TitleService.getTitles());
-        setDepartments(await DepartmentService.get());
+        setTitles(await ApiService.get('title'));
+        setDepartments(await ApiService.get('department'));
     }
     useEffect(() => {
         if (recordForEdit != null)

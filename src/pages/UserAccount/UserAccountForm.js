@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Grid, } from '@material-ui/core';
 import Controls from "../../components/controls/Controls";
 import { useForm, Form } from '../../components/useForm';
-import {EmployeeService} from "../../services/EmployeeService";
+import {ApiService} from "../../services/ApiService";
 
 const initialFValues = {
     id: 0,
@@ -18,7 +18,7 @@ export default function DepartmentForm(props) {
         getRequiredData();
     }, [])
     const getRequiredData = async () => {
-        setPersonnel(await EmployeeService.getSimpleFilteredNoAccount());
+        setPersonnel(await ApiService.get('personnel/simple/filtered/no-account'));
     }
 
     const { addOrEdit, recordForEdit } = props

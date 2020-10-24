@@ -9,7 +9,7 @@ import Popup from "../../components/Popup";
 import UserAccountForm from "./UserAccountForm";
 import AddIcon from '@material-ui/icons/Add';
 import ErrorIcon from '@material-ui/icons/Error';
-import {UserAccountService} from "../../services/UserAccountService";
+import {ApiService} from "../../services/ApiService";
 
 const useStyles = makeStyles(theme => ({
     pageContent: {
@@ -35,6 +35,7 @@ const headCells = [
 
 export default function UserAccount() {
     const classes = useStyles();
+    const url = 'user';
 
     useEffect(() => {
         fetchItems();
@@ -46,7 +47,7 @@ export default function UserAccount() {
     const [openPopup, setOpenPopup] = useState(false)
     
     const fetchItems = async () => {
-        setRecords(await UserAccountService.get());
+        setRecords(await ApiService.get(url));
     };
 
     const {
@@ -71,7 +72,7 @@ export default function UserAccount() {
     const addOrEdit = async (data, resetForm) => {
         let response = null
         if (data.id === 0){
-            response = await UserAccountService.createUpdate(0, data);
+            response = await ApiService.createUpdate(url, 0, data);
         }
         resetForm()
         setRecordForEdit(null)
@@ -84,7 +85,7 @@ export default function UserAccount() {
     }
 
     const onDelete = async (id) => {
-        await UserAccountService.deleteObj(id);
+        await ApiService.deactivate(`${url}/toggleActive`,id);
         let updatedRecord = null;
         let updatedRecords = [];
         records.forEach(record => {

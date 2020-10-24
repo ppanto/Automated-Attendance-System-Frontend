@@ -12,9 +12,7 @@ import EditOutlinedIcon from '@material-ui/icons/EditOutlined';
 import ErrorIcon from '@material-ui/icons/Error';
 import EmployeeImageForm from "./EmployeeImageForm";
 import ImageSearchIcon from '@material-ui/icons/ImageSearch';
-import {EmployeeService} from "../../services/EmployeeService";
-import {DepartmentService} from "../../services/DepartmentService";
-import {TitleService} from "../../services/TitleService";
+import {ApiService} from "../../services/ApiService";
 import { BASE_PATH } from '../../config/ApiConfig';
 
 const useStyles = makeStyles(theme => ({
@@ -51,6 +49,7 @@ const headCells = [
 
 export default function Employee() {
     const classes = useStyles();
+    const url = 'personnel';
 
     useEffect(() => {
         fetchItems();
@@ -69,12 +68,10 @@ export default function Employee() {
     const [filteredInputForSearch, setFilteredInputForSearch] = useState('');
 
     const fetchItems = async () => {
-        setTitles(await TitleService.getTitles());
-        setDepartments(await DepartmentService.get());
-
-        const data = await EmployeeService.get();
-        setRecords(data);
-      };
+        setTitles(await ApiService.get(`title`));
+        setDepartments(await ApiService.get(`department`));
+        setRecords(await ApiService.get(url));
+    };
 
     const {
         TblContainer,
@@ -114,11 +111,11 @@ export default function Employee() {
     }
 
     const addOrEdit = async (data, resetForm) => {
-        let response = await EmployeeService.createUpdate(data.id, data);
+        let response = await ApiService.createUpdate(url, data.id, data);
+        resetForm()
+        setRecordForEdit(null)
+        setOpenPopup(false)
         if(response != null){
-            resetForm()
-            setRecordForEdit(null)
-            setOpenPopup(false)
             let myRecords = records.filter(record => record.id!==data.id)
             myRecords.push(response)
             setRecords(myRecords)
@@ -138,7 +135,7 @@ export default function Employee() {
     }
 
     const onDelete = async (id) => {
-        await EmployeeService.deleteObj(id);
+        await ApiService.deactivate(`${url}/toggleActive`, id);
         let updatedRecord = null;
         let updatedRecords = [];
         records.forEach(record => {

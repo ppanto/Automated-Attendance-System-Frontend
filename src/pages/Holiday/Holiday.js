@@ -10,7 +10,7 @@ import HolidayForm from "./HolidayForm";
 import AddIcon from '@material-ui/icons/Add';
 import CloseIcon from '@material-ui/icons/Close';
 import ConfirmDialog from "../../components/ConfirmDialog";
-import {HolidayService} from "../../services/HolidayService";
+import {ApiService} from "../../services/ApiService";
 
 const useStyles = makeStyles(theme => ({
     pageContent: {
@@ -33,6 +33,7 @@ const headCells = [
 
 export default function LeaveType() {
     const classes = useStyles();
+    const url = 'calendar/holiday';
 
     useEffect(() => {
         fetchItems();
@@ -45,9 +46,8 @@ export default function LeaveType() {
     const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' })
     
     const fetchItems = async () => {
-        const data = await HolidayService.get();
-        setRecords(data);
-      };
+        setRecords(await ApiService.get(url));
+    };
 
     const {
         TblContainer,
@@ -71,7 +71,7 @@ export default function LeaveType() {
     const addOrEdit = async (data, resetForm) => {
         let response = null
         if (data.id === 0){
-            response = await HolidayService.createUpdate(0, data.fullDate)
+            response = await ApiService.createUpdate(url, 0, data.fullDate)
         }
         resetForm()
         setRecordForEdit(null)
@@ -88,7 +88,7 @@ export default function LeaveType() {
             ...confirmDialog,
             isOpen: false
         })
-        const response = await HolidayService.createUpdate(0, fullDate);
+        const response = await ApiService.createUpdate(url, 0, fullDate);
         if(response != null){
             setRecords(records.filter(record => record.fullDate!==fullDate));
         }

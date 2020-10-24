@@ -19,6 +19,9 @@ import AssessmentIcon from '@material-ui/icons/Assessment';
 import AdjustIcon from '@material-ui/icons/Adjust';
 import TimerIcon from '@material-ui/icons/Timer';
 import AirplanemodeActiveIcon from '@material-ui/icons/AirplanemodeActive';
+import ContactMailIcon from '@material-ui/icons/ContactMail';
+import DateRangeIcon from '@material-ui/icons/DateRange';
+import LocationOffIcon from '@material-ui/icons/LocationOff';
 
 import './SideMenu.css';
 
@@ -137,7 +140,7 @@ function SideMenu({ depthStep, depth, expanded }) {
           Icon: ScheduleIcon,
           items: [
             { name: "shifts", label: "Shifts", Icon:TimerIcon, linkText: '/shift-type' },
-            { name: "shiftmapper", label: "Shift Mapper" },
+            { name: "shiftmapper", label: "Shift Mapper", Icon: DateRangeIcon, linkText: 'shift'  },
           ] 
         },
         { 
@@ -145,7 +148,7 @@ function SideMenu({ depthStep, depth, expanded }) {
             label: "Leave Tracker",
             Icon: ExitToAppIcon,
             items: [
-              { name: "leaves", label: "Leaves" },
+              { name: "leaves", label: "Leaves", Icon: LocationOffIcon, linkText: 'leave' },
               { name: "leavetypes", label: "Leave Types", Icon: AdjustIcon, linkText: '/leave-type' },
               { name: "holidays", label: "Holidays", Icon: AirplanemodeActiveIcon, linkText: '/holiday' },
             ] 
@@ -157,7 +160,7 @@ function SideMenu({ depthStep, depth, expanded }) {
           label: "Settings",
           Icon: SettingsIcon,
           items: [
-            { name: "profile", label: "Profile" },
+            { name: "profile", label: "Profile", Icon: ContactMailIcon, linkText: '/settings/profile' },
           ]
         }
       ];

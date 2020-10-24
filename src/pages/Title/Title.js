@@ -11,7 +11,7 @@ import AddIcon from '@material-ui/icons/Add';
 import EditOutlinedIcon from '@material-ui/icons/EditOutlined';
 import CloseIcon from '@material-ui/icons/Close';
 import ConfirmDialog from "../../components/ConfirmDialog";
-import {TitleService} from "../../services/TitleService";
+import {ApiService} from "../../services/ApiService";
 
 const useStyles = makeStyles(theme => ({
     pageContent: {
@@ -35,6 +35,7 @@ const headCells = [
 ]
 
 export default function Title() {
+    const url = 'title';
     const classes = useStyles();
 
     useEffect(() => {
@@ -49,7 +50,7 @@ export default function Title() {
     const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' })
     
     const fetchItems = async () => {
-        const response = await TitleService.getTitles();
+        const response = await ApiService.get(url);
         for(let i = 0;i<response.length;i++){
             if(response[i]['addedTime'] != null){
                 response[i]['addedTime'] = (new Date(response[i]['addedTime'])).toLocaleString('en-GB', { timeZone: 'Europe/Berlin' });
@@ -81,7 +82,12 @@ export default function Title() {
     }
     
     const addOrEdit = async (title, resetForm) => {
-        const response = await TitleService.createUpdateTitle(title.id, title)
+        let response = null
+        if(title.id === 0){
+            response = await ApiService.createUpdate(url, title.id, title);
+        }else{
+            response = await ApiService.createUpdate(url, title.id, {'name':title.name});
+        }
         resetForm()
         setRecordForEdit(null)
         setOpenPopup(false)
@@ -108,7 +114,8 @@ export default function Title() {
             ...confirmDialog,
             isOpen: false
         })
-        await TitleService.deleteTitle(id)
+        //await TitleService.deleteTitle(id)
+        await ApiService.deleteObj(url, id)
         setRecords(records.filter(record => record.id!==id));
     }
 

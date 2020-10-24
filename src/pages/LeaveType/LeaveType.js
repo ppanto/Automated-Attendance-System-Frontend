@@ -11,7 +11,7 @@ import AddIcon from '@material-ui/icons/Add';
 import EditOutlinedIcon from '@material-ui/icons/EditOutlined';
 import CloseIcon from '@material-ui/icons/Close';
 import ConfirmDialog from "../../components/ConfirmDialog";
-import {LeaveTypeService} from "../../services/LeaveTypeService";
+import {ApiService} from "../../services/ApiService";
 
 const useStyles = makeStyles(theme => ({
     pageContent: {
@@ -34,6 +34,7 @@ const headCells = [
 
 export default function LeaveType() {
     const classes = useStyles();
+    const url = 'leave-type'
 
     useEffect(() => {
         fetchItems();
@@ -46,7 +47,7 @@ export default function LeaveType() {
     const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' })
     
     const fetchItems = async () => {
-        setRecords(await LeaveTypeService.get());
+        setRecords(await ApiService.get(url));
     };
 
     const {
@@ -69,7 +70,13 @@ export default function LeaveType() {
     }
 
     const addOrEdit = async (data, resetForm) => {
-        let response = await LeaveTypeService.createUpdate(data.id, data);
+        let response = null
+        if(data.id===0){
+            response = await ApiService.createUpdate(url, data.id, data);
+        }
+        else{
+            response = await ApiService.createUpdate(url, data.id, {'name':data.name});
+        }
         resetForm()
         setRecordForEdit(null)
         setOpenPopup(false)
@@ -90,7 +97,7 @@ export default function LeaveType() {
             ...confirmDialog,
             isOpen: false
         })
-        await LeaveTypeService.deleteObj(id);
+        await ApiService.deleteObj(url, id);
         setRecords(records.filter(record => record.id!==id));
     }
 

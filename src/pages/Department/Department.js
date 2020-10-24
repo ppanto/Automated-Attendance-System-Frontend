@@ -11,7 +11,7 @@ import AddIcon from '@material-ui/icons/Add';
 import EditOutlinedIcon from '@material-ui/icons/EditOutlined';
 import CloseIcon from '@material-ui/icons/Close';
 import ConfirmDialog from "../../components/ConfirmDialog";
-import {DepartmentService} from "../../services/DepartmentService";
+import {ApiService} from "../../services/ApiService";
 
 const useStyles = makeStyles(theme => ({
     pageContent: {
@@ -36,6 +36,7 @@ const headCells = [
 
 export default function Department() {
     const classes = useStyles();
+    const url = 'department';
 
     useEffect(() => {
         fetchItems();
@@ -48,7 +49,7 @@ export default function Department() {
     const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' })
     
     const fetchItems = async () => {
-        const response = await DepartmentService.get();
+        const response = await ApiService.get(url);
         for(let i = 0;i<response.length;i++){
             if(response[i]['addedTime'] != null){
                 response[i]['addedTime'] = (new Date(response[i]['addedTime'])).toLocaleString('en-GB', { timeZone: 'Europe/Berlin' });
@@ -80,7 +81,13 @@ export default function Department() {
     }
 
     const addOrEdit = async (data, resetForm) => {
-        const response = await DepartmentService.createUpdate(data.id, data)
+        let response = null
+        if(data.id === 0){
+            response = await ApiService.createUpdate(url, data.id, data)
+        }
+        else{
+            response = await ApiService.createUpdate(url, data.id, {'name':data.name})
+        }
         resetForm()
         setRecordForEdit(null)
         setOpenPopup(false)
@@ -107,7 +114,7 @@ export default function Department() {
             ...confirmDialog,
             isOpen: false
         })
-        await DepartmentService.deleteObj(id)
+        await ApiService.deleteObj(url, id)
         setRecords(records.filter(record => record.id!==id));
     }
 

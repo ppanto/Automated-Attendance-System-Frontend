@@ -14,6 +14,9 @@ import ShiftType from "../pages/ShiftType/ShiftType";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import Holiday from "../pages/Holiday/Holiday";
 import {Login} from "../pages/Login/Login";
+import {Profile} from '../pages/Profile/Profile';
+import {ShiftMapper} from '../pages/ShiftMapper/ShiftMapper';
+import {Leave} from '../pages/Leave/Leave';
 
 const theme = createMuiTheme({
   palette: {
@@ -44,13 +47,15 @@ const theme = createMuiTheme({
 })
 
 function App() {
+  localStorage.setItem('user', JSON.stringify({username:'a',password:'a'}));
   return (
     <ThemeProvider theme={theme}>
       <Router>
           <Switch>
             <PrivateRoute exact path='/' component={DefaultContainer}></PrivateRoute>
             <Route path='/login' component={Login}></Route>
-            <Redirect to='/login' />
+            {/* <Redirect to='/login' /> */}
+            <Redirect to='/' />
           </Switch>
       </Router>
       <CssBaseline />
@@ -69,9 +74,12 @@ const DefaultContainer = () => (
           <Route path='/department' component={Department}></Route>
           <Route path='/title' component={Title}></Route>
           <Route path='/user' component={UserAccount}></Route>
+          <Route path='/leave' component={Leave}></Route>
           <Route path='/leave-type' component={LeaveType}></Route>
           <Route path='/shift-type' component={ShiftType}></Route>
+          <Route path='/shift' component={ShiftMapper}></Route>
           <Route path='/holiday' component={Holiday}></Route>
+          <Route path='/settings/profile' component={Profile}></Route>
         </Switch>
     </div>
   </Router>

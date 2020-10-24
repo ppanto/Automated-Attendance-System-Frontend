@@ -2,7 +2,7 @@ import React, { useEffect, useCallback } from 'react'
 import {useDropzone} from 'react-dropzone';
 import { Grid, } from '@material-ui/core';
 import { useForm, Form } from '../../components/useForm';
-import {EmployeeService} from '../../services/EmployeeService';
+import {ApiService} from "../../services/ApiService";
 
 const initialFValues = {
     id: 0,
@@ -10,7 +10,7 @@ const initialFValues = {
 
 export default function EmployeeForm(props) {
     const postImage = async (imageData, employeeId) => {
-        await EmployeeService.postImage(imageData, employeeId)
+        await ApiService.postXData('personnel/image' ,imageData, employeeId)
     }
 
     const { recordForEdit, doneWithPopup } = props

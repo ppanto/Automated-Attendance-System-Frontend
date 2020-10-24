@@ -10,7 +10,7 @@ import ShiftTypeForm from "./ShiftTypeForm";
 import AddIcon from '@material-ui/icons/Add';
 import CloseIcon from '@material-ui/icons/Close';
 import ConfirmDialog from "../../components/ConfirmDialog";
-import {ShiftTypeService} from "../../services/ShiftTypeService";
+import {ApiService} from "../../services/ApiService";
 
 const useStyles = makeStyles(theme => ({
     pageContent: {
@@ -35,6 +35,7 @@ const headCells = [
 
 export default function LeaveType() {
     const classes = useStyles();
+    const url = 'shift-type'
 
     useEffect(() => {
         fetchItems();
@@ -47,7 +48,7 @@ export default function LeaveType() {
     const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' })
     
     const fetchItems = async () => {
-        const data = await ShiftTypeService.get()
+        const data = await ApiService.get(url)
         data.forEach(shift => {
             shift.startTimeAsString = `${shift.startTime.slice(0,5)}`;
             shift.endTimeAsString = `${shift.endTime.slice(0,5)}`;
@@ -77,7 +78,7 @@ export default function LeaveType() {
     const addOrEdit = async (data, resetForm) => {
         let response = null
         if (data.id === 0){
-            response = await ShiftTypeService.createUpdate(0, data);
+            response = await ApiService.createUpdate(url, 0, data);
         }
         resetForm()
         setOpenPopup(false)
@@ -95,7 +96,7 @@ export default function LeaveType() {
             ...confirmDialog,
             isOpen: false
         })
-        await ShiftTypeService.deleteObj(id);
+        await ApiService.deleteObj(url, id);
         setRecords(records.filter(record => record.id!==id));
     }
 
