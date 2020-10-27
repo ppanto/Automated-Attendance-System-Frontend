@@ -18,11 +18,11 @@ export default function ShiftTypeForm(props) {
         if (dateObject._d.getTime && typeof dateObject._d.getTime === "function") return true
         return false
     }
-    const isFirstDateBeforeLastDate = (firstDate, lastDate) => {
-        if(firstDate.getHours() < lastDate.getHours()) return true;
-        if((firstDate.getHours() === lastDate.getHours()) && (firstDate.getMinutes() < lastDate.getMinutes())) return true;
-        return false;
-    }
+    // const isFirstDateBeforeLastDate = (firstDate, lastDate) => {
+    //     if(firstDate.getHours() < lastDate.getHours()) return true;
+    //     if((firstDate.getHours() === lastDate.getHours()) && (firstDate.getMinutes() < lastDate.getMinutes())) return true;
+    //     return false;
+    // }
 
     const validate = (fieldValues = values) => {
         let temp = { ...errors }
@@ -64,14 +64,14 @@ export default function ShiftTypeForm(props) {
     const handleSubmit = e => {
         e.preventDefault()
         if (validate()) {
-            if(!isFirstDateBeforeLastDate(values.startTime._d, values.endTime._d)){
-                let temp = { ...errors }
-                temp.endTime = 'End time must come after start time.'
-                setErrors({ ...temp })
-            }
-            else{
+            // if(!isFirstDateBeforeLastDate(values.startTime._d, values.endTime._d)){
+            //     let temp = { ...errors }
+            //     temp.endTime = 'End time must come after start time.'
+            //     setErrors({ ...temp })
+            // }
+            // else{
                 addOrEdit(values, resetForm);
-            }
+            //}
         }
     }
 

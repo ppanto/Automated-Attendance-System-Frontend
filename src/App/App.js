@@ -15,7 +15,7 @@ import Dashboard from "../pages/Dashboard/Dashboard";
 import Holiday from "../pages/Holiday/Holiday";
 import {Login} from "../pages/Login/Login";
 import {Profile} from '../pages/Profile/Profile';
-import {ShiftMapper} from '../pages/ShiftMapper/ShiftMapper';
+import ShiftMapper from '../pages/ShiftMapper/ShiftMapper';
 import {Leave} from '../pages/Leave/Leave';
 
 const theme = createMuiTheme({

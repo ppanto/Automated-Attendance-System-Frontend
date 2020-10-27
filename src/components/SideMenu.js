@@ -140,7 +140,7 @@ function SideMenu({ depthStep, depth, expanded }) {
           Icon: ScheduleIcon,
           items: [
             { name: "shifts", label: "Shifts", Icon:TimerIcon, linkText: '/shift-type' },
-            { name: "shiftmapper", label: "Shift Mapper", Icon: DateRangeIcon, linkText: 'shift'  },
+            { name: "shiftmapper", label: "Shift Mapper", Icon: DateRangeIcon, linkText: '/shift'  },
           ] 
         },
         { 
@@ -148,7 +148,7 @@ function SideMenu({ depthStep, depth, expanded }) {
             label: "Leave Tracker",
             Icon: ExitToAppIcon,
             items: [
-              { name: "leaves", label: "Leaves", Icon: LocationOffIcon, linkText: 'leave' },
+              { name: "leaves", label: "Leaves", Icon: LocationOffIcon, linkText: '/leave' },
               { name: "leavetypes", label: "Leave Types", Icon: AdjustIcon, linkText: '/leave-type' },
               { name: "holidays", label: "Holidays", Icon: AirplanemodeActiveIcon, linkText: '/holiday' },
             ] 
