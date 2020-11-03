@@ -6,22 +6,24 @@ import {ApiService} from "../../services/ApiService";
 
 const initialFValues = {
     id: 0,
-    shiftTypeId: '',
+    leaveTypeId: '',
     personnelId: '',
     startDate: new Date(),
     endDate: new Date(),
+    approved: true,
+    description: ''
 }
 
-export default function ShiftMapperForm(props) {
+export default function LeaveForm(props) {
     const { addOrEdit, recordForEdit } = props
-    const [shiftTypes, setShiftTypes] = useState([]);
+    const [leaveTypes, setLeaveTypes] = useState([]);
     const [employees, setEmployees] = useState([]);
 
     const validate = (fieldValues = values) => {
         let temp = { ...errors }
-        if ('shiftTypeId' in fieldValues)
+        if ('leaveTypeId' in fieldValues)
         // eslint-disable-next-line
-            temp.shiftTypeId = fieldValues.shiftTypeId.length != 0 ? "" : "This field is required."
+            temp.leaveTypeId = fieldValues.leaveTypeId.length != 0 ? "" : "This field is required."
         if ('personnelId' in fieldValues)
         // eslint-disable-next-line
             temp.personnelId = fieldValues.personnelId.length != 0 ? "" : "This field is required."
@@ -46,21 +48,39 @@ export default function ShiftMapperForm(props) {
     const isDateOk = (firstDate, lastDate) => {
         if(firstDate.getFullYear() === lastDate.getFullYear()
             && firstDate.getMonth() === lastDate.getMonth()
-            && firstDate.getDate() === lastDate.getDate()) return false;
-        if(firstDate.getTime() > lastDate.getTime()) return false;
+            && firstDate.getDate() === lastDate.getDate()) return true;
+        if(firstDate.getFullYear() === lastDate.getFullYear()
+            && firstDate.getMonth() > lastDate.getMonth()) return false;
+        if(firstDate.getFullYear() === lastDate.getFullYear()
+            && firstDate.getMonth() === lastDate.getMonth()
+            && firstDate.getDate() > lastDate.getDate()) return false;
         return true;
     }
     const handleSubmit = e => {
         e.preventDefault()
         if (validate()) {
-            //if(!isDateOk(values.startDate._d, values.endDate._d)){
             if(!isDateOk(values.startDate, values.endDate)){
                 let temp = { ...errors }
                 temp.endDate = 'End date must come after start date.'
                 setErrors({ ...temp })
             }
             else{
-                addOrEdit(values, resetForm);
+                if(values.startDate.getFullYear() === values.endDate.getFullYear()
+                && values.startDate.getMonth() === values.endDate.getMonth()
+                && values.startDate.getDate() === values.endDate.getDate()){
+                    addOrEdit({
+                        id: values.id,
+                        leaveTypeId: values.leaveTypeId,
+                        personnelId: values.personnelId,
+                        startDate: values.startDate,
+                        endDate: null,
+                        approved: values.approved,
+                        description: values.description
+                    },resetForm)
+                }
+                else{
+                    addOrEdit(values, resetForm);
+                }
             }
         }
     }
@@ -70,17 +90,23 @@ export default function ShiftMapperForm(props) {
     }, [])
     const getRequiredData = async () => {
         setEmployees(await ApiService.get('personnel/simple'));
-        setShiftTypes(await ApiService.get('shift-type'));
+        setLeaveTypes(await ApiService.get('leave-type'));
     }
 
     useEffect(() => {
         if (recordForEdit != null){
+            let app = true
+            if(recordForEdit['approved'] != null && recordForEdit['approved'] === false){
+                app = false
+            }
             let copy = {
                 id: recordForEdit.id,
-                shiftTypeId: recordForEdit.shiftTypeId,
+                leaveTypeId: recordForEdit.leaveTypeId,
                 personnelId: recordForEdit.personnelId,
                 startDate: new Date(),
                 endDate: new Date(),
+                description: recordForEdit.description,
+                approved: app
             }
             setValues({
                 ...copy
@@ -104,14 +130,14 @@ export default function ShiftMapperForm(props) {
                         error={errors.personnelId}
                     />
                     <Controls.Select
-                        name="shiftTypeId"
-                        label="Shift Identifier"
-                        value={values.shiftTypeId}
+                        name="leaveTypeId"
+                        label="Leave Identifier"
+                        value={values.leaveTypeId}
                         onChange={handleInputChange}
-                        options={shiftTypes}
+                        options={leaveTypes}
                         valueItem = "name"
                         myWidth='130px'
-                        error={errors.shiftTypeId}
+                        error={errors.leaveTypeId}
                     />
                     <Controls.DatePicker
                         name="startDate"
@@ -126,6 +152,19 @@ export default function ShiftMapperForm(props) {
                         value={values.endDate}
                         onChange={handleInputChange}
                         error={errors.endDate}
+                    />
+                    <Controls.Checkbox
+                        name="approved"
+                        label="Approved"
+                        value={values.approved}
+                        onChange={handleInputChange}
+                    />
+                    <Controls.Input
+                        name="description"
+                        label="Description"
+                        value={values.description}
+                        multiline
+                        onChange={handleInputChange}
                     />
                     <div>
                     <Controls.Button

@@ -6,22 +6,23 @@ import {ApiService} from "../../services/ApiService";
 
 const initialFValues = {
     id: 0,
-    shiftTypeId: '',
+    leaveTypeId: '',
     personnelId: '',
     startDate: new Date(),
-    endDate: new Date(),
+    approved: true,
+    description: ''
 }
 
-export default function ShiftMapperForm(props) {
-    const { addOrEdit, recordForEdit } = props
-    const [shiftTypes, setShiftTypes] = useState([]);
+export default function SpecificLeaveForm(props) {
+    const { addOrEdit, recordForEdit, deleteItem } = props
+    const [leaveTypes, setLeaveTypes] = useState([]);
     const [employees, setEmployees] = useState([]);
 
     const validate = (fieldValues = values) => {
         let temp = { ...errors }
-        if ('shiftTypeId' in fieldValues)
+        if ('leaveTypeId' in fieldValues)
         // eslint-disable-next-line
-            temp.shiftTypeId = fieldValues.shiftTypeId.length != 0 ? "" : "This field is required."
+            temp.leaveTypeId = fieldValues.leaveTypeId.length != 0 ? "" : "This field is required."
         if ('personnelId' in fieldValues)
         // eslint-disable-next-line
             temp.personnelId = fieldValues.personnelId.length != 0 ? "" : "This field is required."
@@ -42,27 +43,14 @@ export default function ShiftMapperForm(props) {
         resetForm
     } = useForm(initialFValues, true, validate);
 
-
-    const isDateOk = (firstDate, lastDate) => {
-        if(firstDate.getFullYear() === lastDate.getFullYear()
-            && firstDate.getMonth() === lastDate.getMonth()
-            && firstDate.getDate() === lastDate.getDate()) return false;
-        if(firstDate.getTime() > lastDate.getTime()) return false;
-        return true;
-    }
     const handleSubmit = e => {
         e.preventDefault()
         if (validate()) {
-            //if(!isDateOk(values.startDate._d, values.endDate._d)){
-            if(!isDateOk(values.startDate, values.endDate)){
-                let temp = { ...errors }
-                temp.endDate = 'End date must come after start date.'
-                setErrors({ ...temp })
-            }
-            else{
-                addOrEdit(values, resetForm);
-            }
+            addOrEdit(values, resetForm);
         }
+    }
+    const deleteLeave = () => {
+        deleteItem(values.id, resetForm);
     }
 
     useEffect(() => {
@@ -70,20 +58,13 @@ export default function ShiftMapperForm(props) {
     }, [])
     const getRequiredData = async () => {
         setEmployees(await ApiService.get('personnel/simple'));
-        setShiftTypes(await ApiService.get('shift-type'));
+        setLeaveTypes(await ApiService.get('leave-type'));
     }
 
     useEffect(() => {
         if (recordForEdit != null){
-            let copy = {
-                id: recordForEdit.id,
-                shiftTypeId: recordForEdit.shiftTypeId,
-                personnelId: recordForEdit.personnelId,
-                startDate: new Date(),
-                endDate: new Date(),
-            }
             setValues({
-                ...copy
+                ...recordForEdit
             })
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps    
@@ -104,37 +85,36 @@ export default function ShiftMapperForm(props) {
                         error={errors.personnelId}
                     />
                     <Controls.Select
-                        name="shiftTypeId"
-                        label="Shift Identifier"
-                        value={values.shiftTypeId}
+                        name="leaveTypeId"
+                        label="Leave Identifier"
+                        value={values.leaveTypeId}
                         onChange={handleInputChange}
-                        options={shiftTypes}
+                        options={leaveTypes}
                         valueItem = "name"
                         myWidth='130px'
-                        error={errors.shiftTypeId}
+                        error={errors.leaveTypeId}
                     />
-                    <Controls.DatePicker
-                        name="startDate"
-                        label="Start Date"
-                        value={values.startDate}
+                    <Controls.Checkbox
+                        name="approved"
+                        label="Approved"
+                        value={values.approved}
                         onChange={handleInputChange}
-                        error={errors.startDate}
                     />
-                    <Controls.DatePicker
-                        name="endDate"
-                        label="End Date"
-                        value={values.endDate}
+                    <Controls.Input
+                        name="description"
+                        label="Description"
+                        value={values.description}
+                        multiline
                         onChange={handleInputChange}
-                        error={errors.endDate}
                     />
                     <div>
                     <Controls.Button
                             type="submit"
                             text="Submit" />
                     <Controls.Button
-                        text="Reset"
-                        color="default"
-                        onClick={resetForm} />
+                    text="Delete Absence"
+                    color="default"
+                    onClick={deleteLeave} />
                     </div>
                 </Grid>
             </Grid>

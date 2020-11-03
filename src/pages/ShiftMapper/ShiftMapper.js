@@ -79,13 +79,7 @@ export default function ShiftMapper() {
     }
 
     const addOrEdit = async (data, resetForm) => {
-        let response = null
-        if(data.id===0){
-            response = await ApiService.createUpdate(url, data.id, data);
-        }
-        else{
-            response = await ApiService.createUpdate(url, data.id, data);
-        }
+        const response = await ApiService.createUpdate(url, data.id, data);
         resetForm()
         setRecordForEdit(null)
         setOpenPopup(false)

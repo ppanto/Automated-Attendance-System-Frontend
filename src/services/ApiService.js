@@ -24,6 +24,7 @@ async function get(url){
     .then((response) => {return response.data})
     .catch(() => {return []});
 }
+
 async function createUpdate(url, id, obj){
     const userObj = AuthService.getLoggedInUserObject();
     if(id === 0){
