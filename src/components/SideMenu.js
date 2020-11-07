@@ -22,6 +22,9 @@ import AirplanemodeActiveIcon from '@material-ui/icons/AirplanemodeActive';
 import ContactMailIcon from '@material-ui/icons/ContactMail';
 import DateRangeIcon from '@material-ui/icons/DateRange';
 import LocationOffIcon from '@material-ui/icons/LocationOff';
+import BarChartIcon from '@material-ui/icons/BarChart';
+import TimelineIcon from '@material-ui/icons/Timeline';
+import TableChartIcon from '@material-ui/icons/TableChart';
 
 import './SideMenu.css';
 
@@ -153,7 +156,13 @@ function SideMenu({ depthStep, depth, expanded }) {
               { name: "holidays", label: "Holidays", Icon: AirplanemodeActiveIcon, linkText: '/holiday' },
             ] 
           },
-        { name: "reports", label: "Reports", Icon: AssessmentIcon },
+        { name: "reports", label: "Reports", Icon: AssessmentIcon, items: 
+          [
+          { name: "daily", label: "Daily Report", Icon:TimelineIcon, linkText: '/report/daily' },
+          { name: "workTime", label: "Time Report", Icon:TableChartIcon, linkText: '/report/work-time' },
+          { name: "charts", label: "Charts", Icon: BarChartIcon, linkText: '/report/charts' },
+          ] 
+        },
         "divider",
         {
           name: "settings",

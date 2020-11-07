@@ -170,8 +170,9 @@ export const Profile = () => {
         <Paper className={classes.pageContent}>
             <h2 className={classes.centeredContent}>{employee.fullName}</h2>
             <div className={classes.root}>
-            <Accordion expanded={isExpanded} onClick={() => setIsExpanded(!isExpanded)}>
+            <Accordion expanded={isExpanded}>
                 <AccordionSummary
+                    onClick={() => setIsExpanded(!isExpanded)}
                     expandIcon={<ExpandMoreIcon />}
                     aria-controls="panel1a-content"
                     id="panel1a-header"

@@ -21,6 +21,9 @@ const useStyles = makeStyles(theme => ({
         marginTop: '10px',
         padding: '5px'
     },
+    redFont:{
+        color: 'red',
+    },
 }))
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -92,6 +95,14 @@ export const Tabular = () => {
     }
     const handleIrregularOnly = e =>{
         setIrregularOnly(e.target.value);
+        let filteredResults;
+        if(e.target.value === true){
+            filteredResults = records.filter(record => record.startTimeRegular === false || record.endTimeRegular === false);
+        }
+        else{
+            filteredResults = records;
+        }
+        setVisibleRecords(filteredResults);
     }
 
     const addOrEdit = async (data, resetForm) => {
@@ -115,7 +126,6 @@ export const Tabular = () => {
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
-    
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
@@ -220,7 +230,6 @@ export const Tabular = () => {
                                 item.approved = row.attendanceActionLeavePartialResponse.leaveApproved;
                                 item.description = row.attendanceActionLeavePartialResponse.description;
                             }
-
                             return (
                                 <TableRow
                                     hover
@@ -228,12 +237,16 @@ export const Tabular = () => {
                                 >
                                     <TableCell>{row.personnelFullName}</TableCell>
                                     <TableCell align="right">{shiftStartTime}</TableCell>
-                                    <TableCell align="right">{workStartTime}</TableCell>
+                                    <TableCell align="right"
+                                        className={(row.startTimeRegular ? "" : classes.redFont)}
+                                    >{workStartTime}</TableCell>
                                     <TableCell align="right">{breakStartTime}</TableCell>
                                     <TableCell align="right">{breakEndTime}</TableCell>
                                     <TableCell align="right">{officialStartTime}</TableCell>
                                     <TableCell align="right">{officialEndTime}</TableCell>
-                                    <TableCell align="right">{workEndTime}</TableCell>
+                                    <TableCell align="right"
+                                        className={(row.endTimeRegular ? "" : classes.redFont)}
+                                    >{workEndTime}</TableCell>
                                     <TableCell align="right">{shiftEndTime}</TableCell>
                                     <TableCell align="right">
                                             <Controls.ActionButton

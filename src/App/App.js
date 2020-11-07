@@ -17,6 +17,9 @@ import {Login} from "../pages/Login/Login";
 import {Profile} from '../pages/Profile/Profile';
 import ShiftMapper from '../pages/ShiftMapper/ShiftMapper';
 import Leave from '../pages/Leave/Leave';
+import {DailyReport} from '../pages/Report/DailyReport';
+import {WorkTimeReport} from '../pages/Report/WorkTimeReport';
+import {ChartsReport} from '../pages/Report/ChartsReport';
 
 const theme = createMuiTheme({
   palette: {
@@ -80,6 +83,9 @@ const DefaultContainer = () => (
           <Route path='/shift' component={ShiftMapper}></Route>
           <Route path='/holiday' component={Holiday}></Route>
           <Route path='/settings/profile' component={Profile}></Route>
+          <Route path='/report/daily' component={DailyReport}></Route>
+          <Route path='/report/work-time' component={WorkTimeReport}></Route>
+          <Route path='/report/charts' component={ChartsReport}></Route>
         </Switch>
     </div>
   </Router>

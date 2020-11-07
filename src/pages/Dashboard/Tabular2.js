@@ -29,6 +29,7 @@ export const Tabular2 = () => {
     const [endDate, setEndDate] = useState(new Date());
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [searchByEmployeeFilter, setSearchByEmployeeFilter] = useState('');
 
     useEffect(() => {
         fetchRecords(new Date(), new Date());
@@ -62,6 +63,7 @@ export const Tabular2 = () => {
     }
 
     const handleFilterByDate = e => {
+        setSearchByEmployeeFilter('');
         let target = e.target;
         if(target.name === 'startDate'){
             setStartDate(target.value)
@@ -74,6 +76,7 @@ export const Tabular2 = () => {
     }
     const handleSearch = e => {
         let target = e.target;
+        setSearchByEmployeeFilter(e.target.value);
         setVisibleRecords(records.filter(x => x.personnelName.toLowerCase().includes(target.value.toLowerCase())))
     }
 
@@ -118,6 +121,7 @@ export const Tabular2 = () => {
                         }}
                         onChange={handleSearch}
                         className={classes.controlsStyle}
+                        value={searchByEmployeeFilter}
                 />
                 <Controls.DatePicker
                     name="startDate"

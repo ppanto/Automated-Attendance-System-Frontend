@@ -1,6 +1,16 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import { Paper, makeStyles, Grid } from "@material-ui/core";
 import { BASE_PATH } from '../../config/ApiConfig';
+import { ApiService } from "../../services/ApiService";
+import Controls from "../../components/controls/Controls";
+import { HubConnectionBuilder } from '@microsoft/signalr';
+import SpecificLeaveForm from "./SpecificLeaveForm";
+import Popup from "../../components/Popup";
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
+import TablePagination from '@material-ui/core/TablePagination';
+import {TimelineComponent} from '../../components/TimelineComponent';
+import {Timescale} from '../../components/Timescale';
 
 const useStyles = makeStyles(theme => ({
     centeredHeader: {
@@ -29,48 +39,104 @@ const useStyles = makeStyles(theme => ({
         marginBottom:'15px',
     }
 }))
+function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 export const Timeline = () => {
     const classes = useStyles();
-    const isHoliday = false;
-    const isWeekend = false;
-    const todaysDate = new Date();
-    const list = [1,2,3]
-    const mappedList = list.map((num) =>
-        <Grid container key={num.toString()} className={classes.seperatedGrid}>
-            <Grid item xs={1}>
-                <div className={classes.vcenter}>
-                <img
-                className={classes.centerImage}
-                style = {{width: '75px', height:'75px', objectFit: 'cover', borderRadius:'50%'}}
-                src = {`${BASE_PATH}/personnel/image/get/1`}
-                alt = ''
-                >
-                </img>
-                </div>
-            </Grid>
-            <Grid item xs={1} style={{height:'80px'}}>
-                <div className={classes.centeredText}>
-                <span style={{lineHeight:'80px'}}>John Doe</span>
-                </div>
-            </Grid>
-            <Grid item xs={1} style={{height:'80px'}}>
-                <div className={classes.centeredText}>
-                <span style={{lineHeight:'80px'}}>08:00</span>
-                </div>
-            </Grid>
-            <Grid item xs={8} style={{height:'80px'}}>
-                {/* Timeline */}
-            </Grid>
-            <Grid item xs={1} style={{height:'80px'}}>
-                <div className={classes.centeredText}>
-                <span style={{lineHeight:'80px'}}>17:00</span>
-                </div>
-            </Grid>
-        </Grid>
-    )
+
+    const url = 'attendance-action'
+    const [isHoliday, setIsHoliday] = useState(false);
+    const [isWeekend, setIsWeekend] = useState(false);
+    const [dateFilter, setDateFilter] = useState(new Date());
+    const [records, setRecords] = useState([]);
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [recordForEdit, setRecordForEdit] = useState(null)
+    const [openPopup, setOpenPopup] = useState(false)
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    useEffect(() => {
+        fetchRecords(new Date());
+        setupSignalR();
+        // eslint-disable-next-line
+    }, [])
+    const fetchRecords = async (dateStart) => {
+        const params = 
+            "date=" +
+            dateStart.getFullYear() 
+            + "-" + 
+            (dateStart.getMonth()+1) 
+            + "-" +
+            dateStart.getDate()
+        const data = await ApiService.get(`${url}?${params}`)
+        setIsHoliday(data.holiday)
+        setIsWeekend(data.weekend)
+        setRecords(data.attendanceActionDatePersonnelResponses)
+    }
+    const setupSignalR = async () =>{
+        let properUrl = await ApiService.get('signalr/negotiate')
+        const connection = new HubConnectionBuilder()
+            .withUrl(properUrl.url, {accessTokenFactory: () => properUrl.accessToken})
+            .withAutomaticReconnect()
+            .build();
+        connection.on('newMessage', function(message) {
+            fetchRecords(dateFilter)
+            setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
+            setOpenSnackbar(true)
+        })
+        connection.start()
+            .then(() => {})
+            .catch(() => console.log('Something went wrong with SignalR connection.'))
+    }
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+          return;
+        }
+        setOpenSnackbar(false);
+    };
+    const handleFilterByDate = e =>{
+        fetchRecords(e.target.value)
+        setDateFilter(e.target.value);
+    }
+    const addOrEdit = async (data, resetForm) => {
+        await ApiService.createUpdate('leave', data.id, data)
+        resetForm()
+        setRecordForEdit(null)
+        setOpenPopup(false)
+        fetchRecords(dateFilter);
+    }
+    const openInPopup = item => {
+        setRecordForEdit(item)
+        setOpenPopup(true)
+    }
+    const onDelete = async (id, resetForm) => {
+        await ApiService.deleteObj(`leave`, id)
+        resetForm()
+        setRecordForEdit(null)
+        setOpenPopup(false)
+        fetchRecords(dateFilter);
+    }
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
     return (
         <Paper>
+            <div style={{textAlign:'center', marginTop: '20px', width: '25%', marginLeft:'auto', marginRight:'auto', marginBottom: '5px'}}>
+                <Controls.DatePicker
+                    name="dateFilter"
+                    label="Date"
+                    value={dateFilter}
+                    onChange={handleFilterByDate}
+                />
+            </div>
             <div className={classes.centeredHeader}>
                 {isHoliday ? 
                 (<h3 >Holiday</h3>)
@@ -82,8 +148,8 @@ export const Timeline = () => {
                 :
                 ("")  
                 }
-                <h3>{todaysDate.getFullYear() + "-" + (todaysDate.getMonth()+1) + "-" + todaysDate.getDate()}</h3>
             </div>
+
             <div>
                 <Grid container>
                     <Grid item xs={1} >
@@ -101,17 +167,133 @@ export const Timeline = () => {
                         <span className={classes.boldText}>Check-in</span>
                         </div>
                     </Grid>
-                    <Grid item xs={8}>
-                        {/* Timeline */}
+                    <Grid item xs={7}>
                     </Grid>
                     <Grid item xs={1}>
                         <div className={classes.centeredText}>
                         <span className={classes.boldText}>Check-out</span>
                         </div>
                     </Grid>
+                    <Grid item xs={1}>
+                        <div className={classes.centeredText}>
+                        <span className={classes.boldText}>Absence</span>
+                        </div>
+                    </Grid>
                 </Grid>
-                {mappedList}
+
+                {records.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                let item = {};
+                if(row.attendanceActionLeavePartialResponse == null){
+                    item.id = 0;
+                    item.leaveTypeId = '';
+                    item.personnelId = parseInt(row.personnelId);
+                    item.startDate = dateFilter;
+                    item.approved = true;
+                    item.description = '';
+                }
+                else{
+                    item.id = row.attendanceActionLeavePartialResponse.id;
+                    item.leaveTypeId = parseInt(row.attendanceActionLeavePartialResponse.leaveTypeId);
+                    item.personnelId = parseInt(row.personnelId);
+                    item.startDate = dateFilter;
+                    item.approved = row.attendanceActionLeavePartialResponse.leaveApproved;
+                    item.description = row.attendanceActionLeavePartialResponse.description;
+                }
+                let startTime = "--:--"
+                let endTime = "--:--"
+                if(row.attendanceActionSingularResponseList != null){
+                    row.attendanceActionSingularResponseList.forEach((singular) => {
+                        if(singular.event === "Work Start"){
+                            startTime = singular.dateTime.slice(11,16);
+                        }
+                        else if(singular.event === "Work End"){
+                            endTime = singular.dateTime.slice(11,16);
+                        }
+                    })
+                }
+                
+                return (
+                <Grid container key={index} className={classes.seperatedGrid}>
+                    <Grid item xs={1}>
+                        <div className={classes.vcenter}>
+                        <img
+                        className={classes.centerImage}
+                        style = {{width: '75px', height:'75px', objectFit: 'cover', borderRadius:'50%'}}
+                        src = {`${BASE_PATH}/personnel/image/get/${row.personnelId}`}
+                        alt = ''
+                        >
+                        </img>
+                        </div>
+                    </Grid>
+                    <Grid item xs={1} style={{height:'80px'}}>
+                        <div className={classes.centeredText}>
+                        <span style={{lineHeight:'80px'}}>{row.personnelFullName}</span>
+                        </div>
+                    </Grid>
+                    <Grid item xs={1} style={{height:'80px'}}>
+                        <div className={classes.centeredText}>
+                        <span style={{lineHeight:'80px'}}>{startTime}</span>
+                        </div>
+                    </Grid>
+                    <Grid item xs={7} style={{height:'80px'}}>
+                        <TimelineComponent actions={row.attendanceActionSingularResponseList} leave={row.attendanceActionLeavePartialResponse} />
+                    </Grid>
+                    <Grid item xs={1} style={{height:'80px'}}>
+                        <div className={classes.centeredText}>
+                        <span style={{lineHeight:'80px'}}>{endTime}</span>
+                        </div>
+                    </Grid>
+                    <Grid item xs={1} style={{height:'80px'}}>
+                        <div className={classes.centeredText} style={{marginTop:'15px'}}>
+                        <Controls.ActionButton 
+                            color="primary"
+                            onClick={() => { openInPopup(item) }}>
+                            {row.attendanceActionLeavePartialResponse == null ? (
+                                <span>Add Absence</span>
+                            ) : (
+                                <span>Absent</span>
+                            )}
+                        </Controls.ActionButton>
+                        </div>
+                    </Grid>
+                </Grid>
+                )
+                })}
+                <Timescale />
             </div>
+
+            <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={records.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onChangePage={handleChangePage}
+                    onChangeRowsPerPage={handleChangeRowsPerPage}
+            />
+            <Popup
+                title="Leave Details"
+                openPopup={openPopup}
+                setOpenPopup={setOpenPopup}
+            >
+            <SpecificLeaveForm
+                recordForEdit={recordForEdit}
+                addOrEdit={addOrEdit}
+                deleteItem={onDelete} />
+            </Popup>
+            <Snackbar
+                anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+                }}
+                open={openSnackbar}
+                autoHideDuration={6000}
+                onClose={handleClose}
+            >
+                <Alert onClose={handleClose} severity="success">
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Paper>
     )
 }
