@@ -5,6 +5,8 @@ import Controls from "../../components/controls/Controls";
 import { makeStyles, Paper } from "@material-ui/core";
 import {WorkTimeChart} from './Charts/WorkTimeChart';
 import {TimeChart} from './Charts/TimeChart';
+import IconButton from '@material-ui/core/IconButton';
+import SearchIcon from '@material-ui/icons/Search';
 
 const useStyles = makeStyles(theme => ({
     controlsStyle:{
@@ -57,9 +59,12 @@ export const ChartsReport = () => {
             dateEnd.getDate()
         const data = await ApiService.get(`${url}?${params}`)
         for(let i=0; i<data.length; i++){
-            data[i].timeWorkedAsHours = Math.floor( (data[i].totalTimeWorked / 1000 / 60 / 60) );
-            data[i].timeBreakAsMinutes = Math.floor( (data[i].totalTimeWorked / 1000 / 60 ) );
-            data[i].timeOfficialAsHours = ( (data[i].totalTimeWorked / 1000 / 60 / 60).toFixed(2) );
+            data[i].timeWorkedAsHours = Math.floor( (((data[i].totalTimeWorked / 1000) / 60) / 60) );
+            data[i].averageTimeWorked = (data[i].timeWorkedAsHours/data[i].personnelAtWork).toFixed(2)
+            data[i].timeBreakAsMinutes = Math.floor( ((data[i].totalTimeBreaks / 1000) / 60 ) );
+            data[i].averageBreak = (data[i].timeBreakAsMinutes/data[i].personnelAtWork).toFixed(2)
+            data[i].timeOfficialAsHours = ( (((data[i].totalTimeOfficial / 1000) / 60) / 60).toFixed(2) );
+            data[i].averageOfficial = (data[i].timeOfficialAsHours/data[i].personnelAtWork).toFixed(2)
         }
         setRecords(data)
     }
@@ -67,11 +72,11 @@ export const ChartsReport = () => {
         let target = e.target;
         if(target.name === 'startDate'){
             setStartDate(target.value)
-            fetchRecords(target.value, endDate)
+            //fetchRecords(target.value, endDate)
         }
         else if(target.name === 'endDate'){
             setEndDate(target.value)
-            fetchRecords(startDate, target.value)
+            //fetchRecords(startDate, target.value)
         }
     }
 
@@ -80,7 +85,7 @@ export const ChartsReport = () => {
             <ReportHeader headerText="Report - Charts" />
 
             <Paper>
-            <div style={{paddingTop:'8px', textAlign:'center', marginTop: '20px', width: '70%', marginLeft:'auto', marginRight:'auto'}}>
+            <div style={{ textAlign:'center', marginTop: '20px', width: '70%', marginLeft:'auto', marginRight:'auto'}}>
             <div style={{display:'inline-block', marginRight:'6px'}}>
             <Controls.DatePicker
                 name="startDate"
@@ -99,6 +104,11 @@ export const ChartsReport = () => {
                 className={classes.controlsStyle}
             />
             </div>
+            <div style={{display:'inline-block', position: 'relative', top:'17px'}}>
+            <IconButton onClick={() => fetchRecords(startDate, endDate)}>
+                <SearchIcon fontSize="large"  />
+            </IconButton>
+            </div>
             </div>
 
 
@@ -113,14 +123,17 @@ export const ChartsReport = () => {
                 </Paper>
                 <Paper className={classes.reportPapers}>
                     <div className={classes.centeredReportHeaders}>
-                        <span>Total Break Time</span>
+                        <span>Break Time</span>
                     </div>
                     <div>
                         <TimeChart data={records}
-                            lineName="Break Time (Minutes)"
+                            lineName="Total Break Time (Minutes)"
                             dataKey="fullDate"
-                            lineStroke="#ded357"
+                            lineStroke="#8884d8"
                             lineDataKey="timeBreakAsMinutes"
+                            lineName2="Average Break Time (Minutes)"
+                            lineStroke2="#508f74"
+                            lineDataKey2="averageBreak"
                         />
                     </div>
                 </Paper>
@@ -128,14 +141,17 @@ export const ChartsReport = () => {
             <div style={{width:'100%',display:'flex', flexDirection:'row', overflow:'hidden'}}>
                 <Paper className={classes.reportPapers} style={{marginLeft:'1%'}}>
                     <div className={classes.centeredReportHeaders}>
-                        <span>Total Official Absence Time</span>
+                        <span>Official Absence Time</span>
                     </div>
                     <div>
                         <TimeChart data={records}
-                            lineName="Official Absence Time (Hours)"
+                            lineName="Total Official Absence Time (Hours)"
                             dataKey="fullDate"
-                            lineStroke="#367354"
+                            lineStroke="#1987a6"
                             lineDataKey="timeOfficialAsHours"
+                            lineName2="Average Official Absence Time (Hours)"
+                            lineStroke2="#6d9644"
+                            lineDataKey2="averageOfficial"
                         />
                     </div>
                 </Paper>
@@ -147,7 +163,7 @@ export const ChartsReport = () => {
                         <TimeChart data={records}
                             lineName="Number of Employees"
                             dataKey="fullDate"
-                            lineStroke="#f5672a"
+                            lineStroke="#1987a6"
                             lineDataKey="personnelAtWork"
                         />
                     </div>

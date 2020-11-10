@@ -5,7 +5,8 @@ import {
 import {CustomizedXAxisForChart} from './CustomizedXAxisForChart'
 
 export const TimeChart = (props) => {
-    const {data, lineName, dataKey, lineStroke, lineDataKey} = props;
+    const {data, lineName, dataKey, lineStroke, lineDataKey,
+      lineName2, lineStroke2, lineDataKey2} = props;
 
     return (
         <LineChart
@@ -25,7 +26,10 @@ export const TimeChart = (props) => {
             paddingTop: "40px"
           }}
           />
-          <Line name={lineName} type="monotone" dataKey={lineDataKey} stroke={lineStroke} />
+          <Line strokeWidth={2} name={lineName} type="monotone" dataKey={lineDataKey} stroke={lineStroke} />
+          {(lineName2 !== undefined) ? (
+            <Line strokeWidth={2} name={lineName2} type="monotone" dataKey={lineDataKey2} stroke={lineStroke2} />
+          ) : (null)} 
         </LineChart>
       );
 }

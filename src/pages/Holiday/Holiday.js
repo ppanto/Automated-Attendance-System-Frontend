@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
         padding: theme.spacing(2)
     },
     searchInput: {
-        width: '75%'
+        width: '55%'
     },
     newButton: {
         position: 'absolute',
@@ -28,6 +28,7 @@ const useStyles = makeStyles(theme => ({
 
 const headCells = [
     { id: 'fullDate', label: 'Holiday Date' },
+    { id: 'description', label: 'Holiday Description' },
     { id: 'action', label: '', disableSorting: true },
 ]
 
@@ -44,9 +45,22 @@ export default function LeaveType() {
     const [recordForEdit, setRecordForEdit] = useState(null)
     const [openPopup, setOpenPopup] = useState(false)
     const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' })
-    
+    const [includeHolidaysInPast, setIncludeHolidaysInPast] = useState(false);
+    const [visibleRecords, setVisibleRecords] = useState([]);
+
+    useEffect(() => {
+        setVisibleRecords(records);
+    }, [records]);
+
     const fetchItems = async () => {
-        setRecords(await ApiService.get(url));
+        let data = await ApiService.get(url);
+        for(let i = 0; i<data.length;i++){
+            data[i].aDate = new Date(data[i].fullDate);
+        }
+        setRecords(data);
+        let today = new Date()
+        let vr = data.filter(x => x.aDate>=today)
+        setVisibleRecords(vr)
     };
 
     const {
@@ -54,7 +68,19 @@ export default function LeaveType() {
         TblHead,
         TblPagination,
         recordsAfterPagingAndSorting
-    } = useTable(records, headCells, filterFn);
+    } = useTable(visibleRecords, headCells, filterFn);
+
+    const handleFilterChange = e => {
+        setIncludeHolidaysInPast(!includeHolidaysInPast);
+        if(e.target.value === true){
+            setVisibleRecords(records)
+        }
+        else{
+            let today = new Date()
+            let vr = records.filter(x => x.aDate>=today)
+            setVisibleRecords(vr);
+        }
+    }
 
     const handleSearch = e => {
         let target = e.target;
@@ -63,7 +89,8 @@ export default function LeaveType() {
                 if (target.value === "")
                     return items;
                 else
-                    return items.filter(x => x.fullDate.toLowerCase().includes(target.value.toLowerCase()))
+                    return items.filter(x => x.fullDate.toLowerCase().includes(target.value.toLowerCase())
+                    || x.description.toLowerCase().includes(target.value.toLowerCase()))
             }
         })
     }
@@ -71,7 +98,7 @@ export default function LeaveType() {
     const addOrEdit = async (data, resetForm) => {
         let response = null
         if (data.id === 0){
-            response = await ApiService.createUpdate(url, 0, data.fullDate)
+            response = await ApiService.createUpdate(url, 0, {fullDate: data.fullDate, description: data.description})
         }
         resetForm()
         setRecordForEdit(null)
@@ -88,7 +115,7 @@ export default function LeaveType() {
             ...confirmDialog,
             isOpen: false
         })
-        const response = await ApiService.createUpdate(url, 0, fullDate);
+        const response = await ApiService.createUpdate(url, 0, {fullDate: fullDate, description: ''});
         if(response != null){
             setRecords(records.filter(record => record.fullDate!==fullDate));
         }
@@ -113,6 +140,14 @@ export default function LeaveType() {
                         }}
                         onChange={handleSearch}
                     />
+                    <div style={{display:'inline-block', marginLeft:'10px', position:'relative', top:'3px'}}>
+                    <Controls.Checkbox
+                        name="includePast"
+                        label="Include Holidays in Past "
+                        value={includeHolidaysInPast}
+                        onChange={handleFilterChange}
+                    />
+                    </div>
                     <Controls.Button
                         text="Add New"
                         variant="outlined"
@@ -128,6 +163,7 @@ export default function LeaveType() {
                             recordsAfterPagingAndSorting().map(item =>
                                 (<TableRow key={item.fullDate}>
                                     <TableCell>{item.fullDate}</TableCell>
+                                    <TableCell>{item.description}</TableCell>
                                     <TableCell>
                                         <Controls.ActionButton
                                             color="secondary"

@@ -5,6 +5,8 @@ import { DataGrid } from '@material-ui/data-grid';
 import Controls from "../../components/controls/Controls";
 import { Search } from "@material-ui/icons";
 import { HubConnectionBuilder } from '@microsoft/signalr';
+import IconButton from '@material-ui/core/IconButton';
+import SearchIcon from '@material-ui/icons/Search';
 
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
@@ -67,11 +69,11 @@ export const Tabular2 = () => {
         let target = e.target;
         if(target.name === 'startDate'){
             setStartDate(target.value)
-            fetchRecords(target.value, endDate)
+            //fetchRecords(target.value, endDate)
         }
         else if(target.name === 'endDate'){
             setEndDate(target.value)
-            fetchRecords(startDate, target.value)
+            //fetchRecords(startDate, target.value)
         }
     }
     const handleSearch = e => {
@@ -137,6 +139,11 @@ export const Tabular2 = () => {
                     onChange={handleFilterByDate}
                     className={classes.controlsStyle}
                 />
+                {/* <div style={{display:'inline-block', position: 'relative', top:'17px'}}> */}
+                <IconButton onClick={() => fetchRecords(startDate, endDate)}>
+                    <SearchIcon fontSize="large"  />
+                </IconButton> 
+                {/* </div>*/}
             </div>
             <div style={{ height: 650, width: '95%', marginTop:'15', marginLeft:'auto', marginRight:'auto' }}>
                 <DataGrid rows={visibleRecords} columns={columns} pageSize={10} />

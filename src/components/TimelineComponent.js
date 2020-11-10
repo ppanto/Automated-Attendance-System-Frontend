@@ -4,7 +4,7 @@ import { makeStyles } from "@material-ui/core";
 const useStyles = makeStyles(theme => ({
     wrapper:{
         width:"95%",
-        height:"95px",
+        height:"96px",
         overflow:"hidden",
         padding:"22px 0",
         margin:"auto"

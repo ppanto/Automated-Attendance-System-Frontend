@@ -221,6 +221,7 @@ export const Profile = () => {
                             value={values.oldPassword}
                             onChange={handleInputChange}
                             error={errors.oldPassword}
+                            type="password"
                         />
                         <Controls.Input
                             name="newPassword"
@@ -228,6 +229,7 @@ export const Profile = () => {
                             value={values.newPassword}
                             onChange={handleInputChange}
                             error={errors.newPassword}
+                            type="password"
                         />
                         <Controls.Input
                             name="newPasswordRepeat"
@@ -235,6 +237,7 @@ export const Profile = () => {
                             value={values.newPasswordRepeat}
                             onChange={handleInputChange}
                             error={errors.newPasswordRepeat}
+                            type="password"
                         />
                         <div>
                         <Controls.Button

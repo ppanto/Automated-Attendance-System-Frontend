@@ -4,15 +4,6 @@ import {
 } from 'recharts';
 import {CustomizedXAxisForChart} from './CustomizedXAxisForChart'
 
-// const data = [
-//     {
-//       name: 'Page A', uv: 4000, pv: 2400, amt: 2400,
-//     },
-//     {
-//       name: 'Page B', uv: 3000, pv: 1398, amt: 2210,
-//     },
-// ];
-
 const CustomizedDot = (props) => {
 const {
     //cx, cy, stroke, payload, value,
@@ -55,7 +46,8 @@ export const WorkTimeChart = (props) => {
             paddingTop: "40px"
           }}
           />
-          <Line name="Work Time (Hours)" type="monotone" dataKey="timeWorkedAsHours" stroke="#8884d8" dot={<CustomizedDot />} />
+          <Line strokeWidth={2} name="Total Work Time (Hours)" type="monotone" dataKey="timeWorkedAsHours" stroke="#8884d8" dot={<CustomizedDot />} />
+          <Line strokeWidth={2} name="Average Work Time (Hours)" type="monotone" dataKey="averageTimeWorked" stroke="#508f74" />
         </LineChart>
       );
 }

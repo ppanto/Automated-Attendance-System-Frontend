@@ -6,6 +6,7 @@ import { useForm, Form } from '../../components/useForm';
 const initialFValues = {
     id: 0,
     fullDate: new Date(),
+    description: ''
 }
 
 export default function LeaveTypeForm(props) {
@@ -51,6 +52,12 @@ export default function LeaveTypeForm(props) {
         <Form onSubmit={handleSubmit}>
             <Grid container>
                 <Grid>
+                    <Controls.Input
+                        name="description"
+                        label="Holiday Description"
+                        value={values.description}
+                        onChange={handleInputChange}
+                    />
                     <Controls.DatePicker
                         name="fullDate"
                         label="Holiday Date"

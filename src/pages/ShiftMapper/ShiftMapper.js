@@ -49,14 +49,25 @@ export default function ShiftMapper() {
     const [recordForEdit, setRecordForEdit] = useState(null)
     const [openPopup, setOpenPopup] = useState(false)
     const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' })
-    
+    const [ongoingOnly, setOngoingOnly] = useState(true);
+    const [visibleRecords, setVisibleRecords] = useState([]);
+
+    useEffect(() => {
+        setVisibleRecords(records);
+    }, [records]);
+
     const fetchItems = async () => {
         const data = await ApiService.get(`${url}/ongoing`)
         data.forEach(shift => {
             shift.startTimeAsString = `${shift.startTime.slice(0,5)}`;
             shift.endTimeAsString = `${shift.endTime.slice(0,5)}`;
+            shift.aDate = new Date(shift.endDate);
         })
+        console.log(data)
         setRecords(data);
+        let today = new Date()
+        let vr = data.filter(x => x.aDate>=today)
+        setVisibleRecords(vr)
     };
 
     const {
@@ -64,7 +75,19 @@ export default function ShiftMapper() {
         TblHead,
         TblPagination,
         recordsAfterPagingAndSorting
-    } = useTable(records, headCells, filterFn);
+    } = useTable(visibleRecords, headCells, filterFn);
+
+    const handleFilterChange = e => {
+        setOngoingOnly(!ongoingOnly);
+        if(e.target.value === true){
+            let today = new Date()
+            let vr = records.filter(x => x.aDate>=today)
+            setVisibleRecords(vr);
+        }
+        else{
+            setVisibleRecords(records)
+        }
+    }
 
     const handleSearch = e => {
         let target = e.target;
@@ -123,6 +146,14 @@ export default function ShiftMapper() {
                         }}
                         onChange={handleSearch}
                     />
+                    <div style={{display:'inline-block', marginLeft:'10px', position:'relative', top:'3px'}}>
+                    <Controls.Checkbox
+                        name="includeAll"
+                        label="Ongoing Shifts Only"
+                        value={ongoingOnly}
+                        onChange={handleFilterChange}
+                    />
+                    </div>
                     <Controls.Button
                         text="Add New"
                         variant="outlined"

@@ -170,8 +170,8 @@ export const Tabular = () => {
                         <TableCell align="right">Start Time</TableCell>
                         <TableCell align="right">Break Start</TableCell>
                         <TableCell align="right">Break End</TableCell>
-                        <TableCell align="right">Official Start</TableCell>
-                        <TableCell align="right">Official End</TableCell>
+                        <TableCell align="right">Official A. Start</TableCell>
+                        <TableCell align="right">Official A. End</TableCell>
                         <TableCell align="right">End Time</TableCell>
                         <TableCell align="right">Shift End Time</TableCell>
                         <TableCell align="center">Absence</TableCell>

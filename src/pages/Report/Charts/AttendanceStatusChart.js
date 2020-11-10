@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+    BarChart, Bar, XAxis, YAxis, Legend, CartesianGrid, Tooltip,
   } from 'recharts';
 
 export const AttendanceStatusChart = (props) => {
@@ -39,7 +39,8 @@ export const AttendanceStatusChart = (props) => {
           <YAxis />
           <Tooltip />
           {/* <Legend layout="vertical" verticalAlign="middle" align="right" /> */}
-          <Bar dataKey="Value" fill="#8884d8" />
+          <Legend />
+          <Bar name="Number of Employees" dataKey="Value" fill="#8884d8" />
         </BarChart>
       );
 }
