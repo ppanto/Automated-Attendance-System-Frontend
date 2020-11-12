@@ -7,6 +7,8 @@ import { Search } from "@material-ui/icons";
 import { HubConnectionBuilder } from '@microsoft/signalr';
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
+import IsDateValid from '../../helpers/IsDateValid';
+import {GeneralSnackbar} from '../../components/GeneralSnackbar'
 
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
@@ -32,6 +34,7 @@ export const Tabular2 = () => {
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [searchByEmployeeFilter, setSearchByEmployeeFilter] = useState('');
+    const [open, setOpen] = useState(false)
 
     useEffect(() => {
         fetchRecords(new Date(), new Date());
@@ -43,6 +46,7 @@ export const Tabular2 = () => {
     }, [records])
 
     const fetchRecords = async (dateStart, dateEnd) => {
+        if(!IsDateValid(dateStart) || !IsDateValid(dateEnd)) return;
         const params = 
             "dateStart=" +
             dateStart.getFullYear() 
@@ -69,17 +73,17 @@ export const Tabular2 = () => {
         let target = e.target;
         if(target.name === 'startDate'){
             setStartDate(target.value)
-            //fetchRecords(target.value, endDate)
         }
         else if(target.name === 'endDate'){
             setEndDate(target.value)
-            //fetchRecords(startDate, target.value)
         }
     }
     const handleSearch = e => {
         let target = e.target;
         setSearchByEmployeeFilter(e.target.value);
-        setVisibleRecords(records.filter(x => x.personnelName.toLowerCase().includes(target.value.toLowerCase())))
+        setVisibleRecords(records.filter(x => 
+            x.personnelName.toLowerCase().includes(target.value.toLowerCase())
+        ))
     }
 
     const columns = [
@@ -140,7 +144,12 @@ export const Tabular2 = () => {
                     className={classes.controlsStyle}
                 />
                 {/* <div style={{display:'inline-block', position: 'relative', top:'17px'}}> */}
-                <IconButton onClick={() => fetchRecords(startDate, endDate)}>
+                <IconButton onClick={() => {
+                    if(!IsDateValid(startDate, endDate)) return;
+                    setSearchByEmployeeFilter("")
+                    setOpen(true);
+                    fetchRecords(startDate, endDate)
+                    }}>
                     <SearchIcon fontSize="large"  />
                 </IconButton> 
                 {/* </div>*/}
@@ -162,6 +171,8 @@ export const Tabular2 = () => {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
+            <GeneralSnackbar open={open} setOpen={setOpen} duration={2000}
+            severity="success" message="Data Loaded"  />
         </Paper>
     )
 }

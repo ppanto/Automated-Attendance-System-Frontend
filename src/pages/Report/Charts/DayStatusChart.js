@@ -65,7 +65,7 @@ export const DayStatusChart = (props) => {
 
     return (
         <PieChart width={520} height={520} margin={{
-            top: 20, right: 0, left: 50, bottom: 0,
+            top: 20, right: 0, left: 45, bottom: 0,
           }}>
           <Pie
             activeIndex={activeIndex}

@@ -11,6 +11,8 @@ import MuiAlert from '@material-ui/lab/Alert';
 import TablePagination from '@material-ui/core/TablePagination';
 import {TimelineComponent} from '../../components/TimelineComponent';
 import {Timescale} from '../../components/Timescale';
+import IsDateValid from '../../helpers/IsDateValid';
+import {GeneralSnackbar} from '../../components/GeneralSnackbar'
 
 const useStyles = makeStyles(theme => ({
     centeredHeader: {
@@ -23,6 +25,9 @@ const useStyles = makeStyles(theme => ({
     },
     boldText:{
         fontWeight: 'bold'
+    },
+    columnHeads:{
+        fontSize:'17px'
     },
     vcenter:{
         display: 'flex',
@@ -57,6 +62,8 @@ export const Timeline = () => {
     const [openPopup, setOpenPopup] = useState(false)
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [specialId, setSpecialId] = useState(0);
+    const [open, setOpen] = useState(false)
 
     useEffect(() => {
         fetchRecords(new Date());
@@ -64,6 +71,7 @@ export const Timeline = () => {
         // eslint-disable-next-line
     }, [])
     const fetchRecords = async (dateStart) => {
+        if(!IsDateValid(dateStart)) return;
         const params = 
             "date=" +
             dateStart.getFullYear() 
@@ -86,6 +94,10 @@ export const Timeline = () => {
             fetchRecords(dateFilter)
             setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
             setOpenSnackbar(true)
+            setSpecialId(message.id)
+            setTimeout(function () {
+                setSpecialId(0)
+            }, 6000)
         })
         connection.start()
             .then(() => {})
@@ -98,8 +110,10 @@ export const Timeline = () => {
         setOpenSnackbar(false);
     };
     const handleFilterByDate = e =>{
-        fetchRecords(e.target.value)
         setDateFilter(e.target.value);
+        if(!IsDateValid(e.target.value)) return;
+        fetchRecords(e.target.value)
+        setOpen(true)
     }
     const addOrEdit = async (data, resetForm) => {
         await ApiService.createUpdate('leave', data.id, data)
@@ -154,29 +168,29 @@ export const Timeline = () => {
                 <Grid container>
                     <Grid item xs={1} >
                         <div className={classes.centeredText}>
-                        <span className={classes.boldText}>Photo</span>
+                        <span className={`${classes.boldText} ${classes.columnHeads}`}>Photo</span>
                         </div>
                     </Grid>
                     <Grid item xs={1}>
                         <div className={classes.centeredText}>
-                        <span className={classes.boldText}>Employee</span>
+                        <span className={`${classes.boldText} ${classes.columnHeads}`}>Employee</span>
                         </div>
                     </Grid>
                     <Grid item xs={1}>
                         <div className={classes.centeredText}>
-                        <span className={classes.boldText}>Check-in</span>
+                        <span className={`${classes.boldText} ${classes.columnHeads}`}>Check-in</span>
                         </div>
                     </Grid>
                     <Grid item xs={7}>
                     </Grid>
                     <Grid item xs={1}>
                         <div className={classes.centeredText}>
-                        <span className={classes.boldText}>Check-out</span>
+                        <span className={`${classes.boldText} ${classes.columnHeads}`}>Check-out</span>
                         </div>
                     </Grid>
                     <Grid item xs={1}>
                         <div className={classes.centeredText}>
-                        <span className={classes.boldText}>Absence</span>
+                        <span className={`${classes.boldText} ${classes.columnHeads}`}>Absence</span>
                         </div>
                     </Grid>
                 </Grid>
@@ -199,12 +213,14 @@ export const Timeline = () => {
                     item.approved = row.attendanceActionLeavePartialResponse.leaveApproved;
                     item.description = row.attendanceActionLeavePartialResponse.description;
                 }
+                let startTimeSetAlready = false
                 let startTime = "--:--"
                 let endTime = "--:--"
                 if(row.attendanceActionSingularResponseList != null){
                     row.attendanceActionSingularResponseList.forEach((singular) => {
-                        if(singular.event === "Work Start"){
+                        if(singular.event === "Work Start" && !startTimeSetAlready){
                             startTime = singular.dateTime.slice(11,16);
+                            startTimeSetAlready = true;
                         }
                         else if(singular.event === "Work End"){
                             endTime = singular.dateTime.slice(11,16);
@@ -227,20 +243,20 @@ export const Timeline = () => {
                     </Grid>
                     <Grid item xs={1} style={{height:'80px'}}>
                         <div className={classes.centeredText}>
-                        <span style={{lineHeight:'80px'}}>{row.personnelFullName}</span>
+                        <span style={{lineHeight:'80px'}} className={classes.boldText}>{row.personnelFullName}</span>
                         </div>
                     </Grid>
                     <Grid item xs={1} style={{height:'80px'}}>
                         <div className={classes.centeredText}>
-                        <span style={{lineHeight:'80px'}}>{startTime}</span>
+                        <span style={{lineHeight:'80px'}} className={classes.boldText}>{startTime}</span>
                         </div>
                     </Grid>
                     <Grid item xs={7} style={{height:'80px'}}>
-                        <TimelineComponent actions={row.attendanceActionSingularResponseList} leave={row.attendanceActionLeavePartialResponse} />
+                        <TimelineComponent actions={row.attendanceActionSingularResponseList} leave={row.attendanceActionLeavePartialResponse} specialId={specialId} />
                     </Grid>
                     <Grid item xs={1} style={{height:'80px'}}>
                         <div className={classes.centeredText}>
-                        <span style={{lineHeight:'80px'}}>{endTime}</span>
+                        <span style={{lineHeight:'80px'}} className={classes.boldText}>{endTime}</span>
                         </div>
                     </Grid>
                     <Grid item xs={1} style={{height:'80px'}}>
@@ -294,6 +310,9 @@ export const Timeline = () => {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
+
+            <GeneralSnackbar open={open} setOpen={setOpen} duration={2000}
+            severity="success" message="Data Loaded"  />
         </Paper>
     )
 }

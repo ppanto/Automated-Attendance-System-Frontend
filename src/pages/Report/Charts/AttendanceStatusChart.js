@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-    BarChart, Bar, XAxis, YAxis, Legend, CartesianGrid, Tooltip,
+    BarChart, Bar, XAxis, YAxis, Legend, CartesianGrid, Tooltip
   } from 'recharts';
 
 export const AttendanceStatusChart = (props) => {
@@ -26,13 +26,16 @@ export const AttendanceStatusChart = (props) => {
 
     return (
         <BarChart
-          width={975}
+          width={700}
           height={450}
           data={data}
+          // margin={{
+          //   top: 40, right: 20, left: 15, bottom: 25,
+          // }}
           margin={{
-            top: 40, right: 30, left: 20, bottom: 25,
+            top:40
           }}
-          barSize={50}
+          barSize={40}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />

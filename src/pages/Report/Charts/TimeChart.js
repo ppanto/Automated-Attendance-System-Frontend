@@ -10,11 +10,11 @@ export const TimeChart = (props) => {
 
     return (
         <LineChart
-          width={750}
+          width={590}
           height={430}
           data={data}
           margin={{
-            top: 40, right: 30, left: 15, bottom: 15,
+            top: 40, right: 5, bottom: 15,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />

@@ -4,7 +4,7 @@ import { makeStyles } from "@material-ui/core";
 const useStyles = makeStyles(theme => ({
     wrapper:{
         width:"95%",
-        height:"96px",
+        height:"125px",
         overflow:"hidden",
         padding:"22px 0",
         margin:"auto"
@@ -19,6 +19,18 @@ const useStyles = makeStyles(theme => ({
         width:"10px",
         height:"10px",
         background:"#4a423f", //<- color of dot
+        borderRadius:"50%",
+        position:"absolute",
+        top:"-4px",
+        '&:hover': {
+            cursor: 'pointer',
+        }
+    },
+    specialDot:{
+        float:"left",
+        width:"10px",
+        height:"10px",
+        background:"red", //<- color of dot
         borderRadius:"50%",
         position:"absolute",
         top:"-4px",
@@ -51,12 +63,12 @@ const AbsentHeader = () => {
 }
 
 const Dot = (props) => {
-    const convertTimeToPercent = (hours,minutes) =>{
-        return ((((hours + (minutes/60)) / 24) * 100) + "%");
-    }
+    // const convertTimeToPercent = (hours,minutes) =>{
+    //     return ((((hours + (minutes/60)) / 24) * 100) + "%");
+    // }
 
     const classes = useStyles();
-    const {action} = props;
+    const {action, isSpecial} = props;
     const dateTime = new Date(action.dateTime);
     let formatedTime;
     if(dateTime.getHours()<10){
@@ -71,16 +83,18 @@ const Dot = (props) => {
         formatedTime = formatedTime + dateTime.getMinutes();
     }
     const [isVisible, setIsVisible] = useState(false);
-    let leftPosition = convertTimeToPercent(dateTime.getHours(), dateTime.getMinutes());
+    //let leftPosition = convertTimeToPercent(dateTime.getHours(), dateTime.getMinutes());
     return (
         <div>
         <div onMouseEnter={() => setIsVisible(true)} 
             onMouseLeave={() => setIsVisible(false)} 
-            className={classes.dot} 
-            style={{left:leftPosition}}></div>
+            className={`${(isSpecial ? classes.specialDot : classes.dot)}`} 
+            style={{left:`${action.leftPosition}%`}}>
+        </div>
         <div
             className={`${classes.belowDot} ${!isVisible ? (classes.belowDotHidden) : (null)}`} 
-            style={{left:leftPosition}}>
+            //style={{left:leftPosition}}
+            style={{left:`${action.leftPosition}%`}}>
             <span>{action.event}, {formatedTime}</span>
         </div>
         </div>
@@ -88,8 +102,12 @@ const Dot = (props) => {
 }
 
 export const TimelineComponent = (props) => {
+    const convertTimeToPercent = (hours,minutes) =>{
+        return ((((hours + (minutes/60)) / 24) * 100));
+    }
+
     const classes = useStyles();
-    const {actions, leave} = props;
+    const {actions, leave, specialId} = props;
 
     let lineColor = 'rgb(72, 133, 97)';
     if((actions == null || actions.length === 0)){
@@ -100,6 +118,16 @@ export const TimelineComponent = (props) => {
             lineColor = 'rgb(255,229,163)'
         }
     }
+    for(let i=0;i<actions.length;i++){
+        const dateTime = new Date(actions[i].dateTime);
+        actions[i].leftPosition = convertTimeToPercent(dateTime.getHours(), dateTime.getMinutes());
+        if(i>0){
+            if(actions[i].leftPosition - actions[i-1].leftPosition < 0.55){
+                actions[i].leftPosition+=0.65
+            }
+        }
+    }
+
 
     return (
         <>
@@ -114,7 +142,7 @@ export const TimelineComponent = (props) => {
                 (
                     actions.map((action, index) => {
                         return(
-                        <Dot key={index} action={action} />
+                        <Dot key={index} action={action} isSpecial={(action.attendanceActionId === specialId) ? true : false} />
                         )
                     })
                 ) : (null)

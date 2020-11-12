@@ -11,6 +11,8 @@ import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
 import {PersonnelTotalsReport} from './WorkTimeReports/PersonnelTotalsReport';
 import {PerPersonnelReport} from './WorkTimeReports/PerPersonnelReport';
+import IsDateValid from '../../helpers/IsDateValid';
+import {GeneralSnackbar} from '../../components/GeneralSnackbar'
 
 function a11yProps(index) {
     return {
@@ -51,6 +53,7 @@ export const WorkTimeReport = () => {
     const [visibleDataEmployee, setVisibleDataEmployee] = useState({
         personnelFullName: ''
     });
+    const [open, setOpen] = useState(false)
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
@@ -62,6 +65,7 @@ export const WorkTimeReport = () => {
     const fetchEmployeeRecords = async () => { setEmployees(await ApiService.get('personnel/simple')) }
 
     const fetchRecords = async (dateStart, dateEnd) => {
+        if(!IsDateValid(dateStart) || !IsDateValid(dateEnd)) return;
         const params = 
             "dateStart=" +
             dateStart.getFullYear() 
@@ -101,6 +105,7 @@ export const WorkTimeReport = () => {
             }
         }
 
+        setOpen(true)
         setRecords(data)
     }
 
@@ -188,6 +193,8 @@ export const WorkTimeReport = () => {
         </div>
         
         </Paper>
+        <GeneralSnackbar open={open} setOpen={setOpen} duration={2000}
+            severity="success" message="Data Loaded"  />
         </>
     )
 }

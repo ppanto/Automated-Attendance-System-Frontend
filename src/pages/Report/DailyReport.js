@@ -12,6 +12,8 @@ import { withStyles } from "@material-ui/core/styles";
 import MuiAccordionSummary from "@material-ui/core/AccordionSummary";
 import { DataGrid } from '@material-ui/data-grid';
 import {ReportHeader} from './ReportHeader';
+import IsDateValid from '../../helpers/IsDateValid';
+import {GeneralSnackbar} from '../../components/GeneralSnackbar'
 
 const useStyles = makeStyles(theme => ({
     reportPapers: {
@@ -52,11 +54,13 @@ export const DailyReport = () => {
         currentlyNotAtWork: []
     });
     const [isExpanded, setIsExpanded] = useState(true);
+    const [open, setOpen] = useState(false);
 
     useEffect(() => {
         fetchRecords(new Date());
     }, [])
     const fetchRecords = async (dateStart) => {
+        if(!IsDateValid(dateStart)) return;
         const params = 
             "date=" +
             dateStart.getFullYear() 
@@ -66,6 +70,7 @@ export const DailyReport = () => {
             dateStart.getDate()
         const data = await ApiService.get(`${url}?${params}`)
         setRecords(data)
+        setOpen(true)
     }
     const columns = [
         { field: 'fullName', headerName: 'Full Name', width: 220 },
@@ -106,7 +111,8 @@ export const DailyReport = () => {
                 <div className={classes.centeredReportHeaders}>
                     <span>Employees - Attendance Status</span>
                 </div>
-                <div>
+                <div style={{width:'100%'}}>
+                <div style={{width:'94%', margin:'auto'}}>
                     <AttendanceStatusChart 
                     totalPersonnel = {records.totalPersonnel}
                     present = {records.present}
@@ -114,6 +120,7 @@ export const DailyReport = () => {
                     approvedLeave = {records.approvedLeave}
                     unapprovedLeave = {records.unapprovedLeave}
                     />
+                </div>
                 </div>
             </Paper>
             <Paper className={classes.reportPapers} style={{width:'37%',minWidth:'350px'}}>
@@ -156,6 +163,8 @@ export const DailyReport = () => {
             </Accordion>
         </div>
         </Paper>
+        <GeneralSnackbar open={open} setOpen={setOpen} duration={2000}
+            severity="success" message="Data Loaded"  />
         </>
     )
 }

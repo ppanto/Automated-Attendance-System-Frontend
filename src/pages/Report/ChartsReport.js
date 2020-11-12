@@ -7,6 +7,8 @@ import {WorkTimeChart} from './Charts/WorkTimeChart';
 import {TimeChart} from './Charts/TimeChart';
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
+import IsDateValid from '../../helpers/IsDateValid';
+import {GeneralSnackbar} from '../../components/GeneralSnackbar'
 
 const useStyles = makeStyles(theme => ({
     controlsStyle:{
@@ -26,6 +28,9 @@ const useStyles = makeStyles(theme => ({
         marginLeft:'auto', marginRight:'auto', width:'270px',fontWeight:'bold',
         marginTop:'4px', fontSize: '17px'
     },
+    chartDiv:{
+        width:'95%', margin:'auto', minWidth:'640px'
+    }
 }))
 
 export const ChartsReport = () => {
@@ -37,6 +42,7 @@ export const ChartsReport = () => {
     startDateAtBeggining.setTime(endDate.getTime()-(7*24*3600000));
     const [startDate, setStartDate] = useState(startDateAtBeggining)
     const [records, setRecords] = useState([]);
+    const [open, setOpen] = useState(false);
 
     useEffect(() => {
         fetchRecords(startDate, endDate);
@@ -44,6 +50,7 @@ export const ChartsReport = () => {
     }, [])
 
     const fetchRecords = async (dateStart, dateEnd) => {
+        if(!IsDateValid(dateStart) || !IsDateValid(dateEnd)) return;
         const params = 
             "dateStart=" +
             dateStart.getFullYear() 
@@ -67,16 +74,15 @@ export const ChartsReport = () => {
             data[i].averageOfficial = (data[i].timeOfficialAsHours/data[i].personnelAtWork).toFixed(2)
         }
         setRecords(data)
+        setOpen(true)
     }
     const handleFilterByDate = e => {
         let target = e.target;
         if(target.name === 'startDate'){
             setStartDate(target.value)
-            //fetchRecords(target.value, endDate)
         }
         else if(target.name === 'endDate'){
             setEndDate(target.value)
-            //fetchRecords(startDate, target.value)
         }
     }
 
@@ -84,7 +90,7 @@ export const ChartsReport = () => {
         <>
             <ReportHeader headerText="Report - Charts" />
 
-            <Paper>
+            <Paper >
             <div style={{ textAlign:'center', marginTop: '20px', width: '70%', marginLeft:'auto', marginRight:'auto'}}>
             <div style={{display:'inline-block', marginRight:'6px'}}>
             <Controls.DatePicker
@@ -117,7 +123,7 @@ export const ChartsReport = () => {
                     <div className={classes.centeredReportHeaders}>
                         <span>Total Work Time</span>
                     </div>
-                    <div>
+                    <div className={classes.chartDiv}>
                         <WorkTimeChart data={records} />
                     </div>
                 </Paper>
@@ -125,7 +131,7 @@ export const ChartsReport = () => {
                     <div className={classes.centeredReportHeaders}>
                         <span>Break Time</span>
                     </div>
-                    <div>
+                    <div className={classes.chartDiv}>
                         <TimeChart data={records}
                             lineName="Total Break Time (Minutes)"
                             dataKey="fullDate"
@@ -143,7 +149,7 @@ export const ChartsReport = () => {
                     <div className={classes.centeredReportHeaders}>
                         <span>Official Absence Time</span>
                     </div>
-                    <div>
+                    <div className={classes.chartDiv}>
                         <TimeChart data={records}
                             lineName="Total Official Absence Time (Hours)"
                             dataKey="fullDate"
@@ -159,7 +165,7 @@ export const ChartsReport = () => {
                     <div className={classes.centeredReportHeaders}>
                         <span>Employees At Office Per Day</span>
                     </div>
-                    <div>
+                    <div className={classes.chartDiv}>
                         <TimeChart data={records}
                             lineName="Number of Employees"
                             dataKey="fullDate"
@@ -171,6 +177,8 @@ export const ChartsReport = () => {
             </div>
 
             </Paper>
+            <GeneralSnackbar open={open} setOpen={setOpen} duration={2000}
+            severity="success" message="Data Loaded"  />
         </>
     )
 }

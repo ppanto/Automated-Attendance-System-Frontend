@@ -30,11 +30,12 @@ export const WorkTimeChart = (props) => {
 
     return (
         <LineChart
-          width={750}
+          width={590}
           height={430}
           data={data}
           margin={{
-            top: 40, right: 30, left: 15, bottom: 15,
+            //top: 40, right: 10, left: 8, bottom: 15,
+            top: 40, bottom: 15, right: 5
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />

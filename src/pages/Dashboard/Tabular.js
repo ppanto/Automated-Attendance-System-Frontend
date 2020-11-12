@@ -14,6 +14,8 @@ import Popup from "../../components/Popup";
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import TablePagination from '@material-ui/core/TablePagination';
+import IsDateValid from '../../helpers/IsDateValid';
+import {GeneralSnackbar} from '../../components/GeneralSnackbar'
 
 const useStyles = makeStyles(theme => ({
     centeredHeader: {
@@ -24,6 +26,9 @@ const useStyles = makeStyles(theme => ({
     redFont:{
         color: 'red',
     },
+    redBordered:{
+        border: '1px solid red'
+    }
 }))
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -45,6 +50,9 @@ export const Tabular = () => {
     const [openPopup, setOpenPopup] = useState(false)
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [show, setShow] = useState(false);
+    const [showRowId, setShowRowId] = useState(0);
+    const [open, setOpen] = useState(false)
 
     useEffect(() => {
         fetchRecords(new Date());
@@ -56,6 +64,7 @@ export const Tabular = () => {
         setIrregularOnly(false);
     }, [records])
     const fetchRecords = async (dateStart) => {
+        if(!IsDateValid(dateStart)) return;
         const params = 
             "date=" +
             dateStart.getFullYear() 
@@ -78,6 +87,11 @@ export const Tabular = () => {
             fetchRecords(dateFilter)
             setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
             setOpenSnackbar(true)
+            setShowRowId(message.id)
+            setShow(true)
+            setTimeout(function () {
+                setShow(false)
+            }, 6000)
         })
         connection.start()
             .then(() => {})
@@ -90,8 +104,10 @@ export const Tabular = () => {
         setOpenSnackbar(false);
     };
     const handleFilterByDate = e =>{
-        fetchRecords(e.target.value)
         setDateFilter(e.target.value);
+        if(!IsDateValid(e.target.value)) return;
+        fetchRecords(e.target.value)
+        setOpen(true);
     }
     const handleIrregularOnly = e =>{
         setIrregularOnly(e.target.value);
@@ -191,25 +207,38 @@ export const Tabular = () => {
                             let breakEndTime = '';
                             let officialStartTime = '';
                             let officialEndTime = '';
+
+                            let workStartTimeId = -1;
+                            let workEndTimeId = -1;
+                            let breakStartTimeId = -1;
+                            let breakEndTimeId = -1;
+                            let officialStartTimeId = -1;
+                            let officialEndTimeId = -1;
                             if(row.attendanceActionSingularResponseList != null){
                                 row.attendanceActionSingularResponseList.forEach((singular) => {
                                     if(singular.event === "Work Start"){
                                         workStartTime = singular.dateTime.slice(11,19);
+                                        workStartTimeId = singular.attendanceActionId;
                                     }
                                     else if(singular.event === "Break Start"){
                                         breakStartTime = singular.dateTime.slice(11,19);
+                                        breakStartTimeId = singular.attendanceActionId;
                                     }
                                     else if(singular.event === "Official Absence Start"){
                                         officialStartTime = singular.dateTime.slice(11,19);
+                                        officialStartTimeId = singular.attendanceActionId;
                                     }
                                     else if(singular.event === "Work End"){
                                         workEndTime = singular.dateTime.slice(11,19);
+                                        workEndTimeId = singular.attendanceActionId;
                                     }
                                     else if(singular.event === "Break End"){
                                         breakEndTime = singular.dateTime.slice(11,19);
+                                        breakEndTimeId = singular.attendanceActionId;
                                     }
                                     else if(singular.event === "Official Absence End"){
                                         officialEndTime = singular.dateTime.slice(11,19);
+                                        officialEndTimeId = singular.attendanceActionId;
                                     }
                                 })
                             }
@@ -238,14 +267,15 @@ export const Tabular = () => {
                                     <TableCell>{row.personnelFullName}</TableCell>
                                     <TableCell align="right">{shiftStartTime}</TableCell>
                                     <TableCell align="right"
-                                        className={(row.startTimeRegular ? "" : classes.redFont)}
+                                        //className={(row.startTimeRegular ? "" : classes.redFont)}
+                                       className={`${row.startTimeRegular ? "" : `${classes.redFont}`} ${(workStartTimeId === showRowId && show) ? classes.redBordered : ""}`}
                                     >{workStartTime}</TableCell>
-                                    <TableCell align="right">{breakStartTime}</TableCell>
-                                    <TableCell align="right">{breakEndTime}</TableCell>
-                                    <TableCell align="right">{officialStartTime}</TableCell>
-                                    <TableCell align="right">{officialEndTime}</TableCell>
+                                    <TableCell align="right" className={(breakStartTimeId === showRowId && show) ? classes.redBordered : ""}>{breakStartTime}</TableCell>
+                                    <TableCell align="right" className={(breakEndTimeId === showRowId && show) ? classes.redBordered : ""}>{breakEndTime}</TableCell>
+                                    <TableCell align="right" className={(officialStartTimeId === showRowId && show) ? classes.redBordered : ""}>{officialStartTime}</TableCell>
+                                    <TableCell align="right" className={(officialEndTimeId === showRowId && show) ? classes.redBordered : ""}>{officialEndTime}</TableCell>
                                     <TableCell align="right"
-                                        className={(row.endTimeRegular ? "" : classes.redFont)}
+                                        className={`${row.endTimeRegular ? "" : `${classes.redFont}`} ${(workEndTimeId === showRowId && show) ? classes.redBordered : ""}`}
                                     >{workEndTime}</TableCell>
                                     <TableCell align="right">{shiftEndTime}</TableCell>
                                     <TableCell align="right">
@@ -300,6 +330,8 @@ export const Tabular = () => {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
+            <GeneralSnackbar open={open} setOpen={setOpen} duration={2000}
+            severity="success" message="Data Loaded"  />
         </Paper>
     )
 }
