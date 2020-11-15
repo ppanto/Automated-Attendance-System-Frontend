@@ -1,82 +1,90 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { withStyles } from "@material-ui/core/styles";
+import React, {useState, useEffect} from "react";
+import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
-import Typography from "@material-ui/core/Typography";
 import { Link, Route, BrowserRouter, Switch } from "react-router-dom";
 import {Tabular} from "./Tabular"
 import {Tabular2} from "./Tabular2"
 import {Timeline} from "./Timeline"
 
-function TabContainer({ children, dir }) {
-  return (
-    <Typography component="div" dir={dir} style={{ padding: 8 * 3 }}>
-      {children}
-    </Typography>
-  );
-}
+import { ApiService } from "../../services/ApiService";
+import { HubConnectionBuilder } from '@microsoft/signalr';
 
-TabContainer.propTypes = {
-  children: PropTypes.node.isRequired,
-  dir: PropTypes.string.isRequired
-};
-
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   root: {
     backgroundColor: theme.palette.background.paper,
-    // width: '100%'
   }
-});
+}))
 
-class Dashboard extends React.Component {
-  state = {
-    value: 0
-  };
+export const Dashboard = () => {
+  const classes = useStyles()
+  const [conn, setConn] = useState()
+  const [value, setValue] = useState(0)
 
-  handleChange = (event, value) => {
-    this.setState({ value });
-  };
+  useEffect(() => {
+    setupSignalR();
+  },[])
 
-  handleChangeIndex = index => {
-    this.setState({ value: index });
-  };
+  useEffect(() => {
+    return () => {
+      if((typeof conn !== "undefined") && (typeof conn.stop === 'function')) {
+        conn.stop();
+      }
+    }
+  },[conn])
 
-  render() {
-    const { classes } = this.props;
+  const setupSignalR = async () =>{
+    let properUrl = await ApiService.get('signalr/negotiate')
+    const connection = new HubConnectionBuilder()
+        .withUrl(properUrl.url, {accessTokenFactory: () => properUrl.accessToken})
+        .withAutomaticReconnect()
+        .build();
+    connection.start()
+        .then(() => {})
+        .catch(() => console.log('Something went wrong with SignalR connection.'))
+    setConn(connection)
+  }
 
-    return (
-      <BrowserRouter>
-        <div className={classes.root}>
-          <AppBar position="static" color="default">
-            <Tabs
-              value={this.state.value}
-              onChange={this.handleChange}
-              indicatorColor="primary"
-              textColor="primary"
-              centered
-            >
-              <Tab label="Timeline" component={Link} to="/" />
-              <Tab label="Tabular View" component={Link} to="/tabular" />
-              <Tab label="Tabular View By Action" component={Link} to="/tabular2" />
-            </Tabs>
-          </AppBar>
+  const allTabs = ['/', '/tabular', '/tabular2'];
+  return (
+    <BrowserRouter>
+      <div className={classes.root}>
+        <AppBar position="static" color="default">
+          <Tabs
+            value={value}
+            onChange={(event, index) => { setValue(index) }}
+            indicatorColor="primary"
+            textColor="primary"
+            centered
+          >
+            <Tab label="Timeline" value={0} component={Link} to={allTabs[0]} /> 
+            <Tab label="Tabular View" value={1} component={Link} to={allTabs[1]} />
+            <Tab label="Tabular View By Action" value={2} component={Link} to={allTabs[2]} />
+          </Tabs>
+        </AppBar>
 
-          <Switch>
-            <Route exact path="/" component={Timeline} />
-            <Route path="/tabular" component={Tabular} />
-            <Route path="/tabular2" component={Tabular2} />
-          </Switch>
-        </div>
-      </BrowserRouter>
+        <Switch>
+          <Route
+            exact path={allTabs[0]}
+            render={(props) => (
+              <Timeline {...props} conn={conn} />
+            )}
+          />
+          <Route
+            path={allTabs[1]}
+            render={(props) => (
+              <Tabular {...props} conn={conn} />
+            )}
+          />
+          <Route
+            path={allTabs[2]}
+            render={(props) => (
+              <Tabular2 {...props} conn={conn} />
+            )}
+          />
+        </Switch>
+      </div>
+    </BrowserRouter>
     );
-  }
 }
-
-Dashboard.propTypes = {
-    classes: PropTypes.object.isRequired,
-    theme: PropTypes.object.isRequired
-};
-
-export default withStyles(styles, { withTheme: true })(Dashboard);

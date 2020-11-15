@@ -4,12 +4,10 @@ import { ApiService } from "../../services/ApiService";
 import { DataGrid } from '@material-ui/data-grid';
 import Controls from "../../components/controls/Controls";
 import { Search } from "@material-ui/icons";
-import { HubConnectionBuilder } from '@microsoft/signalr';
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
 import IsDateValid from '../../helpers/IsDateValid';
 import {GeneralSnackbar} from '../../components/GeneralSnackbar'
-
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 
@@ -23,8 +21,9 @@ const useStyles = makeStyles(theme => ({
     }
 }))
 
-export const Tabular2 = () => {
+export const Tabular2 = (props) => {
     
+    const {conn} = props;
     const url = 'attendance-action/by-action'
     const classes = useStyles();
     const [records, setRecords] = useState([]);
@@ -36,10 +35,13 @@ export const Tabular2 = () => {
     const [searchByEmployeeFilter, setSearchByEmployeeFilter] = useState('');
     const [open, setOpen] = useState(false)
 
+
     useEffect(() => {
-        fetchRecords(new Date(), new Date());
         setupSignalR();
         // eslint-disable-next-line
+    },[conn])
+    useEffect(() => {
+        fetchRecords(new Date(), new Date());
     }, [])
     useEffect(() => {
         setVisibleRecords(records);
@@ -94,19 +96,13 @@ export const Tabular2 = () => {
     ];
 
     const setupSignalR = async () =>{
-        let properUrl = await ApiService.get('signalr/negotiate')
-        const connection = new HubConnectionBuilder()
-            .withUrl(properUrl.url, {accessTokenFactory: () => properUrl.accessToken})
-            .withAutomaticReconnect()
-            .build();
-        connection.on('newMessage', function(message) {
-            fetchRecords(startDate, endDate)
-            setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
-            setOpenSnackbar(true)
-        })
-        connection.start()
-            .then(() => {})
-            .catch(() => console.log('Something went wrong with SignalR connection.'))
+        if((typeof conn !== "undefined") && (typeof conn.on === 'function')){
+            conn.on('newMessage', function(message) {
+                fetchRecords(startDate, endDate)
+                setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
+                setOpenSnackbar(true)
+            })
+        }
     }
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -143,7 +139,6 @@ export const Tabular2 = () => {
                     onChange={handleFilterByDate}
                     className={classes.controlsStyle}
                 />
-                {/* <div style={{display:'inline-block', position: 'relative', top:'17px'}}> */}
                 <IconButton onClick={() => {
                     if(!IsDateValid(startDate, endDate)) return;
                     setSearchByEmployeeFilter("")
@@ -152,7 +147,6 @@ export const Tabular2 = () => {
                     }}>
                     <SearchIcon fontSize="large"  />
                 </IconButton> 
-                {/* </div>*/}
             </div>
             <div style={{ height: 650, width: '95%', marginTop:'15', marginLeft:'auto', marginRight:'auto' }}>
                 <DataGrid rows={visibleRecords} columns={columns} pageSize={10} />

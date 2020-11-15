@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react'
-import { Paper, makeStyles } from "@material-ui/core";
+import { Paper, makeStyles, InputAdornment } from "@material-ui/core";
+import { Search } from "@material-ui/icons";
 import { ApiService } from "../../services/ApiService";
 import Controls from "../../components/controls/Controls";
-import { HubConnectionBuilder } from '@microsoft/signalr';
 import TableContainer from '@material-ui/core/TableContainer';
 import Table from '@material-ui/core/Table';
 import TableHead from '@material-ui/core/TableHead';
@@ -34,8 +34,9 @@ function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
 
-export const Tabular = () => {
+export const Tabular = (props) => {
     const classes = useStyles();
+    const {conn} = props;
 
     const url = 'attendance-action'
     const [isHoliday, setIsHoliday] = useState(false);
@@ -43,6 +44,7 @@ export const Tabular = () => {
     const [dateFilter, setDateFilter] = useState(new Date());
     const [records, setRecords] = useState([]);
     const [visibleRecords, setVisibleRecords] = useState([]);
+    const [searchByEmployeeFilter, setSearchByEmployeeFilter] = useState('');
     const [irregularOnly, setIrregularOnly] = useState(false);
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -55,13 +57,26 @@ export const Tabular = () => {
     const [open, setOpen] = useState(false)
 
     useEffect(() => {
-        fetchRecords(new Date());
         setupSignalR();
+        // eslint-disable-next-line
+    },[conn])
+    useEffect(() => {
+        fetchRecords(dateFilter);
         // eslint-disable-next-line
     }, [])
     useEffect(() => {
-        setVisibleRecords(records);
-        setIrregularOnly(false);
+        let newVisibleRecords;
+        if(searchByEmployeeFilter === ''){
+            newVisibleRecords = records
+        }
+        else{
+            newVisibleRecords = records.filter(x =>  x.personnelFullName.toLowerCase().includes(searchByEmployeeFilter.toLowerCase()))
+        }
+        if(irregularOnly){
+            newVisibleRecords = newVisibleRecords.filter(x => x.startTimeRegular === false || x.endTimeRegular === false);
+        }
+        setVisibleRecords(newVisibleRecords);
+        // eslint-disable-next-line
     }, [records])
     const fetchRecords = async (dateStart) => {
         if(!IsDateValid(dateStart)) return;
@@ -78,24 +93,18 @@ export const Tabular = () => {
         setRecords(data.attendanceActionDatePersonnelResponses)
     }
     const setupSignalR = async () =>{
-        let properUrl = await ApiService.get('signalr/negotiate')
-        const connection = new HubConnectionBuilder()
-            .withUrl(properUrl.url, {accessTokenFactory: () => properUrl.accessToken})
-            .withAutomaticReconnect()
-            .build();
-        connection.on('newMessage', function(message) {
-            fetchRecords(dateFilter)
-            setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
-            setOpenSnackbar(true)
-            setShowRowId(message.id)
-            setShow(true)
-            setTimeout(function () {
-                setShow(false)
-            }, 6000)
-        })
-        connection.start()
-            .then(() => {})
-            .catch(() => console.log('Something went wrong with SignalR connection.'))
+        if((typeof conn !== "undefined") && (typeof conn.on === 'function')){
+            conn.on('newMessage', function(message) {
+                fetchRecords(dateFilter)
+                setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
+                setOpenSnackbar(true)
+                setShowRowId(message.id)
+                setShow(true)
+                setTimeout(function () {
+                    setShow(false)
+                }, 6000)
+            })
+        }
     }
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -112,11 +121,11 @@ export const Tabular = () => {
     const handleIrregularOnly = e =>{
         setIrregularOnly(e.target.value);
         let filteredResults;
+        if(searchByEmployeeFilter === '') filteredResults = records;
+        else filteredResults = records.filter(x => 
+            x.personnelFullName.toLowerCase().includes(searchByEmployeeFilter.toLowerCase()))
         if(e.target.value === true){
-            filteredResults = records.filter(record => record.startTimeRegular === false || record.endTimeRegular === false);
-        }
-        else{
-            filteredResults = records;
+            filteredResults = filteredResults.filter(record => record.startTimeRegular === false || record.endTimeRegular === false);
         }
         setVisibleRecords(filteredResults);
     }
@@ -146,16 +155,44 @@ export const Tabular = () => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
+    const handleSearch = e => {
+        let target = e.target;
+        setSearchByEmployeeFilter(e.target.value);
+        if(!irregularOnly){
+            setVisibleRecords(records.filter(x => 
+                x.personnelFullName.toLowerCase().includes(target.value.toLowerCase())
+            ))
+        }
+        else{
+            setVisibleRecords(records.filter(x => 
+                x.personnelFullName.toLowerCase().includes(target.value.toLowerCase()) &&
+                (x.startTimeRegular === false || x.endTimeRegular === false)
+            ))
+        }
+    }
 
     return (
         <Paper>
-            <div style={{textAlign:'center', marginTop: '20px', width: '25%', marginLeft:'auto', marginRight:'auto', marginBottom: '5px'}}>
+            <div style={{textAlign:'center', marginTop: '20px', width: '75%', marginLeft:'auto', marginRight:'auto', marginBottom: '5px'}}>
+                <div>
+                <Controls.Input
+                        label="Search By Employee"
+                        InputProps={{
+                            startAdornment: (<InputAdornment position="start">
+                                <Search />
+                            </InputAdornment>)
+                        }}
+                        onChange={handleSearch}
+                        value={searchByEmployeeFilter}
+                        style={{paddingRight:'4px'}}
+                />
                 <Controls.DatePicker
                     name="dateFilter"
                     label="Date"
                     value={dateFilter}
                     onChange={handleFilterByDate}
                 />
+                </div>
                 <Controls.Checkbox
                         name="irregularOnly"
                         label="Only Irregularities"
@@ -176,7 +213,7 @@ export const Tabular = () => {
                 }
             </div>
 
-            <div style={{ height: 750, width: '95%', marginTop:'15', marginLeft:'auto', marginRight:'auto' }}>
+            <div style={{ width: '95%', marginTop:'15', marginLeft:'auto', marginRight:'auto' }}>
                 <TableContainer component={Paper}>
                 <Table aria-label="customized table">
                     <TableHead>

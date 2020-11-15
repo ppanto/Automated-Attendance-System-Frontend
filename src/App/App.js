@@ -11,7 +11,7 @@ import Employee from "../pages/Employee/Employee";
 import UserAccount from "../pages/UserAccount/UserAccount";
 import LeaveType from "../pages/LeaveType/LeaveType";
 import ShiftType from "../pages/ShiftType/ShiftType";
-import Dashboard from "../pages/Dashboard/Dashboard";
+import {Dashboard} from "../pages/Dashboard/Dashboard";
 import Holiday from "../pages/Holiday/Holiday";
 import {Login} from "../pages/Login/Login";
 import {Profile} from '../pages/Profile/Profile';

@@ -1,9 +1,9 @@
 import React, {useState, useEffect} from 'react'
-import { Paper, makeStyles, Grid } from "@material-ui/core";
+import { Paper, makeStyles, Grid, InputAdornment } from "@material-ui/core";
+import { Search } from "@material-ui/icons";
 import { BASE_PATH } from '../../config/ApiConfig';
 import { ApiService } from "../../services/ApiService";
 import Controls from "../../components/controls/Controls";
-import { HubConnectionBuilder } from '@microsoft/signalr';
 import SpecificLeaveForm from "./SpecificLeaveForm";
 import Popup from "../../components/Popup";
 import Snackbar from '@material-ui/core/Snackbar';
@@ -48,7 +48,8 @@ function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
 
-export const Timeline = () => {
+export const Timeline = (props) => {
+    const {conn} = props;
     const classes = useStyles();
 
     const url = 'attendance-action'
@@ -63,13 +64,29 @@ export const Timeline = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [specialId, setSpecialId] = useState(0);
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false);
+    const [searchByEmployeeFilter, setSearchByEmployeeFilter] = useState('');
+    const [visibleRecords, setVisibleRecords] = useState([]);
 
     useEffect(() => {
-        fetchRecords(new Date());
         setupSignalR();
         // eslint-disable-next-line
+    },[conn])
+    useEffect(() => {
+        fetchRecords(dateFilter);
+        // eslint-disable-next-line
     }, [])
+    useEffect(() => {
+        if(searchByEmployeeFilter === ''){
+            setVisibleRecords(records);
+        }
+        else{
+            setVisibleRecords(records.filter(x => 
+                x.personnelFullName.toLowerCase().includes(searchByEmployeeFilter.toLowerCase())
+            ))
+        }
+        // eslint-disable-next-line
+    }, [records])
     const fetchRecords = async (dateStart) => {
         if(!IsDateValid(dateStart)) return;
         const params = 
@@ -85,23 +102,17 @@ export const Timeline = () => {
         setRecords(data.attendanceActionDatePersonnelResponses)
     }
     const setupSignalR = async () =>{
-        let properUrl = await ApiService.get('signalr/negotiate')
-        const connection = new HubConnectionBuilder()
-            .withUrl(properUrl.url, {accessTokenFactory: () => properUrl.accessToken})
-            .withAutomaticReconnect()
-            .build();
-        connection.on('newMessage', function(message) {
-            fetchRecords(dateFilter)
-            setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
-            setOpenSnackbar(true)
-            setSpecialId(message.id)
-            setTimeout(function () {
-                setSpecialId(0)
-            }, 6000)
-        })
-        connection.start()
-            .then(() => {})
-            .catch(() => console.log('Something went wrong with SignalR connection.'))
+        if((typeof conn !== "undefined") && (typeof conn.on === 'function')){
+            conn.on('newMessage', function(message) {
+                fetchRecords(dateFilter)
+                setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
+                setOpenSnackbar(true)
+                setSpecialId(message.id)
+                setTimeout(function () {
+                    setSpecialId(0)
+                }, 6000)
+            })
+        }
     }
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -140,10 +151,28 @@ export const Timeline = () => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
+    const handleSearch = e => {
+        let target = e.target;
+        setSearchByEmployeeFilter(e.target.value);
+        setVisibleRecords(records.filter(x => 
+            x.personnelFullName.toLowerCase().includes(target.value.toLowerCase())
+        ))
+    }
 
     return (
         <Paper>
-            <div style={{textAlign:'center', marginTop: '20px', width: '25%', marginLeft:'auto', marginRight:'auto', marginBottom: '5px'}}>
+            <div style={{textAlign:'center', marginTop: '20px', width: '70%', marginLeft:'auto', marginRight:'auto', marginBottom: '5px'}}>
+                <Controls.Input
+                        label="Search By Employee"
+                        InputProps={{
+                            startAdornment: (<InputAdornment position="start">
+                                <Search />
+                            </InputAdornment>)
+                        }}
+                        onChange={handleSearch}
+                        value={searchByEmployeeFilter}
+                        style={{paddingRight:'4px'}}
+                />
                 <Controls.DatePicker
                     name="dateFilter"
                     label="Date"
@@ -195,7 +224,7 @@ export const Timeline = () => {
                     </Grid>
                 </Grid>
 
-                {records.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                {visibleRecords.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
                 let item = {};
                 if(row.attendanceActionLeavePartialResponse == null){
                     item.id = 0;

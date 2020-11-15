@@ -57,13 +57,12 @@ export default function ShiftMapper() {
     }, [records]);
 
     const fetchItems = async () => {
-        const data = await ApiService.get(`${url}/ongoing`)
+        const data = await ApiService.get(`${url}`)
         data.forEach(shift => {
             shift.startTimeAsString = `${shift.startTime.slice(0,5)}`;
             shift.endTimeAsString = `${shift.endTime.slice(0,5)}`;
             shift.aDate = new Date(shift.endDate);
         })
-        console.log(data)
         setRecords(data);
         let today = new Date()
         let vr = data.filter(x => x.aDate>=today)
@@ -96,7 +95,10 @@ export default function ShiftMapper() {
                 if (target.value === "")
                     return items;
                 else
-                    return items.filter(x => x.personnelFullName.toLowerCase().includes(target.value.toLowerCase()))
+                    return items.filter(x =>
+                        x.personnelFullName.toLowerCase().includes(target.value.toLowerCase()) ||
+                        x.shiftTypeName.toLowerCase().includes(target.value.toLowerCase())
+                    )
             }
         })
     }
@@ -137,7 +139,7 @@ export default function ShiftMapper() {
              <Paper className={classes.pageContent} style={{overflowX:'scroll'}}>
                 <Toolbar>
                 <Controls.Input
-                        label="Search By Employee Name"
+                        label="Search"
                         className={classes.searchInput}
                         InputProps={{
                             startAdornment: (<InputAdornment position="start">
