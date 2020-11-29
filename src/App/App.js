@@ -50,15 +50,15 @@ const theme = createMuiTheme({
 })
 
 function App() {
-  localStorage.setItem('user', JSON.stringify({username:'a',password:'a'}));
+  //localStorage.setItem('user', JSON.stringify({username:'a',password:'a'}));
   return (
     <ThemeProvider theme={theme}>
       <Router>
           <Switch>
             <PrivateRoute exact path='/' component={DefaultContainer}></PrivateRoute>
             <Route path='/login' component={Login}></Route>
-            {/* <Redirect to='/login' /> */}
-            <Redirect to='/' />
+            <Redirect to='/login' />
+            {/* <Redirect to='/' /> */}
           </Switch>
       </Router>
       <CssBaseline />

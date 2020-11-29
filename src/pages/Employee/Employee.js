@@ -40,7 +40,7 @@ const headCells = [
     { id: 'dateTimeJoinedAsString', label: 'Date Added' },
     { id: 'address', label: 'Address' },
     { id: 'birthDate', label: 'Birth Date' },
-    { id: 'workPhone', label: 'WorkPhone' },
+    { id: 'workPhone', label: 'Work Phone' },
     { id: 'privatePhone', label: 'Private Phone' },
     { id: 'gender', label: 'Gender' },
     { id: 'activeStatusAsString', label: 'Status' },
