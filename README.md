@@ -1,9 +1,9 @@
 # Automated Attendance System
 <br/>
 React App<br/>
-<br/>
+
 Front end for system that makes tracking attendance data easier.<br/>
-<br/>
+
 Other parts of the project:<br/>
 https://github.com/ppanto/Face-Recognition-Attendance-System<br/>
 https://github.com/ppanto/Automated-Attendance-System-Backend<br/>
