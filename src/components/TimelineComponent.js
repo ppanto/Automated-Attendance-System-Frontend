@@ -42,12 +42,12 @@ const useStyles = makeStyles(theme => ({
         float:"left",
         position:"absolute",
         transform: "translateX(-50%)",
-        border: 'solid 1px',
+        border: 'solid 2px',
         borderColor: 'rgb(246,247,248)',
         top: '22px',
         padding: '3px',
-        color: 'rgb(240,152,154)',
-        
+        color: '#85130b',  //'rgb(240,152,154)'
+        fontWeight: 800,
     },
     belowDotHidden:{
         display:'none',
