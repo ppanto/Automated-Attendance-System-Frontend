@@ -66,6 +66,11 @@ export const Tabular2 = (props) => {
         data.forEach(item => {
             item.dateAsString = item.dateTime.slice(0,10)
             item.timeAsString = item.dateTime.slice(11,19)
+
+            // eslint-disable-next-line
+            if(item.personnelId == null){
+                item.personnelName = "Unknown";
+            }
         })
         setRecords(data)
     }
@@ -99,7 +104,12 @@ export const Tabular2 = (props) => {
         if((typeof conn !== "undefined") && (typeof conn.on === 'function')){
             conn.on('newMessage', function(message) {
                 fetchRecords(startDate, endDate)
-                setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
+                if(!message.hasOwnProperty('personnelName') || message.personnelName == null){
+                    setSnackbarMessage("Latest: Unknown User used action -> " + message.event);
+                }
+                else{
+                    setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
+                }
                 setOpenSnackbar(true)
             })
         }

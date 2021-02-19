@@ -115,7 +115,7 @@ export const TimelineComponent = (props) => {
             lineColor = 'rgb(240,152,154)'
         }
         else{
-            lineColor = 'rgb(255,229,163)'
+            lineColor = 'rgb(194,162,2)'//'rgb(255,229,163)'
         }
     }
     for(let i=0;i<actions.length;i++){

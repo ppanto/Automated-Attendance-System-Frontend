@@ -104,10 +104,18 @@ export const Timeline = (props) => {
     const setupSignalR = async () =>{
         if((typeof conn !== "undefined") && (typeof conn.on === 'function')){
             conn.on('newMessage', function(message) {
-                fetchRecords(dateFilter)
-                setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
+                // eslint-disable-next-line
+                if(!message.hasOwnProperty('personnelName') || message.personnelName == null){
+                    setSnackbarMessage("Latest: Unknown User used action -> " + message.event);
+                }
+                else{
+                    fetchRecords(dateFilter)
+                    setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
+                    setSpecialId(message.id)
+                }
+                
                 setOpenSnackbar(true)
-                setSpecialId(message.id)
+                //setSpecialId(message.id)
                 setTimeout(function () {
                     setSpecialId(0)
                 }, 6000)
@@ -224,7 +232,12 @@ export const Timeline = (props) => {
                     </Grid>
                 </Grid>
 
-                {visibleRecords.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                {visibleRecords.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .filter(row => row.personnelId != null)
+                .map((row, index) => {
+                // eslint-disable-next-line
+                //if(row.personnelId == null) continue;
+
                 let item = {};
                 if(row.attendanceActionLeavePartialResponse == null){
                     item.id = 0;
