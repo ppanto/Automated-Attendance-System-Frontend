@@ -16,9 +16,8 @@ async function get(url){
     return await axios({
         method: 'GET',
         url: `${BASE_PATH}/${url}`,
-        auth:{
-            username: userObj.username,
-            password: userObj.password
+        headers: {
+            'Authorization': 'Bearer ' + userObj.token
         }
     })
     .then((response) => {return response.data})
@@ -31,11 +30,8 @@ async function createUpdate(url, id, obj){
         return await axios({
             method: 'POST',
             url: `${BASE_PATH}/${url}`,
-            auth:{
-                username: userObj.username,
-                password: userObj.password
-            },
             headers:{
+                'Authorization': 'Bearer ' + userObj.token,
                 'Content-Type': 'application/json'
             },
             data: JSON.stringify(obj)
@@ -46,11 +42,8 @@ async function createUpdate(url, id, obj){
         return await axios({
             method: 'PUT',
             url: `${BASE_PATH}/${url}/${id}`,
-            auth:{
-                username: userObj.username,
-                password: userObj.password
-            },
             headers:{
+                'Authorization': 'Bearer ' + userObj.token,
                 'Content-Type': 'application/json'
             },
             data: JSON.stringify(obj)
@@ -64,9 +57,8 @@ async function deleteObj(url, id){
     await axios({
         method: 'DELETE',
         url: `${BASE_PATH}/${url}/${id}`,
-        auth:{
-            username: userObj.username,
-            password: userObj.password
+        headers:{
+            'Authorization': 'Bearer ' + userObj.token
         }
     });
 }
@@ -75,9 +67,8 @@ async function deactivate(url, id){
     await axios({
         method: 'POST',
         url: `${BASE_PATH}/${url}/${id}`,
-        auth:{
-            username: userObj.username,
-            password: userObj.password
+        headers:{
+            'Authorization': 'Bearer ' + userObj.token
         }
     });
 }
@@ -87,9 +78,8 @@ async function postXData(url, data, id){
         url: `${BASE_PATH}/${url}/${id}`,
         method: 'POST',
         data: data,
-        auth:{
-            username: userObj.username,
-            password: userObj.password
+        headers:{
+            'Authorization': 'Bearer ' + userObj.token
         }
     });
 }
@@ -99,12 +89,9 @@ async function send(url, method, data){
         url: `${BASE_PATH}/${url}`,
         method: method,
         data: data,
-        auth:{
-            username: userObj.username,
-            password: userObj.password
-        },
         headers:{
+            'Authorization': 'Bearer ' + userObj.token,
             'Content-Type': 'application/json'
-        },
+        }
     });
 }

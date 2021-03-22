@@ -13,19 +13,23 @@ function login(username, password){
         message: ''
     };
     return axios({
-        method: 'GET',
-        url: `${BASE_PATH}/account/validate-login`,
-        auth: {
+        method: 'POST',
+        url: `${BASE_PATH}/account/login`,
+        data: JSON.stringify({
             username: username,
-            password: password
-        }
+            passwordHash: password
+        })
     }).then((response) => {
         if(response.status === 200){
             let user = {
                 username: username,
-                password: password
+                token: response.data
             };
             localStorage.setItem('user', JSON.stringify(user));
+        }
+        // eslint-disable-next-line
+        else if(response.status == 403){
+            returnObject.message = 'Invalid username or password';
         }
         returnObject.status = response.status;
         return returnObject;
