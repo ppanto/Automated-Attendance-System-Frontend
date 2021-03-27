@@ -34,6 +34,7 @@ function login(username, password){
         returnObject.status = response.status;
         return returnObject;
     }).catch((err) => {
+        // should use err.response.status here instead of what I wrote at the time
         // eslint-disable-next-line
         if(err == 'Error: Network Error'){
             returnObject.status = 0;

@@ -11,6 +11,12 @@ export const ApiService = {
     send
 }
 
+function checkIfExpiredCredsAndLogout(err){
+    if(err.response && err.response.status === 403){
+        alert("Your login credentials have expired. Please log in again.")
+        AuthService.logout();
+    }
+}
 async function get(url){
     const userObj = AuthService.getLoggedInUserObject();
     return await axios({
@@ -21,7 +27,10 @@ async function get(url){
         }
     })
     .then((response) => {return response.data})
-    .catch(() => {return []});
+    .catch((err) => {
+        checkIfExpiredCredsAndLogout(err)
+        return []
+    });
 }
 
 async function createUpdate(url, id, obj){
@@ -37,7 +46,10 @@ async function createUpdate(url, id, obj){
             data: JSON.stringify(obj)
         })
         .then((response) => {return response.data})
-        .catch(() => {return null});
+        .catch((err) => {
+            checkIfExpiredCredsAndLogout(err)
+            return null
+        });
     }else{
         return await axios({
             method: 'PUT',
@@ -49,7 +61,10 @@ async function createUpdate(url, id, obj){
             data: JSON.stringify(obj)
         })
         .then((response) => {return response.data})
-        .catch(() => {return null});
+        .catch((err) => {
+            checkIfExpiredCredsAndLogout(err)
+            return null
+        });
     }
 }
 async function deleteObj(url, id){
@@ -60,6 +75,9 @@ async function deleteObj(url, id){
         headers:{
             'Authorization': 'Bearer ' + userObj.token
         }
+    }).catch((err) => {
+        checkIfExpiredCredsAndLogout(err)
+        return null
     });
 }
 async function deactivate(url, id){
@@ -70,6 +88,9 @@ async function deactivate(url, id){
         headers:{
             'Authorization': 'Bearer ' + userObj.token
         }
+    }).catch((err) => {
+        checkIfExpiredCredsAndLogout(err)
+        return null
     });
 }
 async function postXData(url, data, id){
@@ -81,6 +102,9 @@ async function postXData(url, data, id){
         headers:{
             'Authorization': 'Bearer ' + userObj.token
         }
+    }).catch((err) => {
+        checkIfExpiredCredsAndLogout(err)
+        return null
     });
 }
 async function send(url, method, data){
@@ -93,5 +117,8 @@ async function send(url, method, data){
             'Authorization': 'Bearer ' + userObj.token,
             'Content-Type': 'application/json'
         }
+    }).catch((err) => {
+        checkIfExpiredCredsAndLogout(err)
+        return null
     });
 }
