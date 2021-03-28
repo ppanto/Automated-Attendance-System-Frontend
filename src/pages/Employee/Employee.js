@@ -66,6 +66,7 @@ export default function Employee() {
     const [filteredSelectForTitle, setFilteredSelectForTitle] = useState('');
     const [filteredSelectForDepartment, setFilteredSelectForDepartment] = useState('');
     const [filteredInputForSearch, setFilteredInputForSearch] = useState('');
+    const [filteredToggleForActive, setFilteredToggleForActive] = useState(true);
 
     const fetchItems = async () => {
         setTitles(await ApiService.get(`title`));
@@ -92,10 +93,13 @@ export default function Employee() {
                 if(filteredSelectForDepartment !== ''){
                     items = items.filter(x => x.departmentId === filteredSelectForDepartment);
                 }
+                if(filteredToggleForActive === true){
+                    items = items.filter(x => x.activeStatus === true)
+                }
                 return items;
             }
         })
-    }, [filteredInputForSearch, filteredSelectForTitle, filteredSelectForDepartment])
+    }, [filteredInputForSearch, filteredSelectForTitle, filteredSelectForDepartment, filteredToggleForActive])
 
     const handleSearch = e => {
         let target = e.target;
@@ -107,6 +111,9 @@ export default function Employee() {
         }
         else if(target.name === 'departmentId'){
             setFilteredSelectForDepartment(e.target.value);
+        }
+        else if(target.name === 'activeOnly'){
+            setFilteredToggleForActive(e.target.value);
         }
     }
 
@@ -190,6 +197,14 @@ export default function Employee() {
                         valueItem = "name"
                         myWidth='130px'
                     />
+                    <div style={{display:'inline-block', marginLeft:'10px', position:'relative', top:'3px'}}>
+                    <Controls.Checkbox
+                        name="activeOnly"
+                        label="Active"
+                        value={filteredToggleForActive}
+                        onChange={handleSearch}
+                    />
+                    </div>
                     <Controls.Button
                         text="Add New"
                         variant="outlined"
