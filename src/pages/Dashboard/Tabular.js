@@ -11,8 +11,6 @@ import TableCell from '@material-ui/core/TableCell';
 import TableBody from '@material-ui/core/TableBody';
 import SpecificLeaveForm from "./SpecificLeaveForm";
 import Popup from "../../components/Popup";
-import Snackbar from '@material-ui/core/Snackbar';
-import MuiAlert from '@material-ui/lab/Alert';
 import TablePagination from '@material-ui/core/TablePagination';
 import IsDateValid from '../../helpers/IsDateValid';
 import {GeneralSnackbar} from '../../components/GeneralSnackbar'
@@ -30,18 +28,15 @@ const useStyles = makeStyles(theme => ({
         border: '1px solid red'
     }
 }))
-function Alert(props) {
-    return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
 
 export const Tabular = (props) => {
     const classes = useStyles();
     const {
-        conn,
         searchByEmployeeFilter,
         setSearchByEmployeeFilter,
         dateFilter,
-        setDateFilter
+        setDateFilter,
+        trackChange
     } = props;
 
     const url = 'attendance-action'
@@ -50,8 +45,6 @@ export const Tabular = (props) => {
     const [records, setRecords] = useState([]);
     const [visibleRecords, setVisibleRecords] = useState([]);
     const [irregularOnly, setIrregularOnly] = useState(false);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
     const [recordForEdit, setRecordForEdit] = useState(null)
     const [openPopup, setOpenPopup] = useState(false)
     const [page, setPage] = useState(0);
@@ -61,13 +54,21 @@ export const Tabular = (props) => {
     const [open, setOpen] = useState(false)
 
     useEffect(() => {
-        setupSignalR();
-        // eslint-disable-next-line
-    },[conn])
-    useEffect(() => {
         fetchRecords(dateFilter);
         // eslint-disable-next-line
     }, [])
+    useEffect(() => {
+        fetchRecords(dateFilter);
+
+        if(trackChange != null){
+            setShowRowId(trackChange)
+            setShow(true)
+            setTimeout(function () {
+                setShow(false)
+            }, 6000)
+        }
+        // eslint-disable-next-line
+    }, [trackChange])
     useEffect(() => {
         let newVisibleRecords;
         if(searchByEmployeeFilter === ''){
@@ -96,33 +97,7 @@ export const Tabular = (props) => {
         setIsWeekend(data.weekend)
         setRecords(data.attendanceActionDatePersonnelResponses)
     }
-    const setupSignalR = async () =>{
-        if((typeof conn !== "undefined") && (typeof conn.on === 'function')){
-            conn.on('newMessage', function(message) {
-                // eslint-disable-next-line
-                if(!message.hasOwnProperty('personnelName') || message.personnelName == null){
-                    setSnackbarMessage("Latest: Unknown User used action -> " + message.event);
-                }
-                else{
-                    fetchRecords(dateFilter)
-                    setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
-                    setShowRowId(message.id)
-                }
-                setOpenSnackbar(true)
-                //setShowRowId(message.id)
-                setShow(true)
-                setTimeout(function () {
-                    setShow(false)
-                }, 6000)
-            })
-        }
-    }
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-          return;
-        }
-        setOpenSnackbar(false);
-    };
+
     const handleFilterByDate = e =>{
         setDateFilter(e.target.value);
         if(!IsDateValid(e.target.value)) return;
@@ -370,19 +345,6 @@ export const Tabular = (props) => {
                 addOrEdit={addOrEdit}
                 deleteItem={onDelete} />
             </Popup>
-            <Snackbar
-                anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-                }}
-                open={openSnackbar}
-                autoHideDuration={6000}
-                onClose={handleClose}
-            >
-                <Alert onClose={handleClose} severity="success">
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
             <GeneralSnackbar open={open} setOpen={setOpen} duration={2000}
             severity="success" message="Data Loaded"  />
         </Paper>

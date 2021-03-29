@@ -6,8 +6,6 @@ import { ApiService } from "../../services/ApiService";
 import Controls from "../../components/controls/Controls";
 import SpecificLeaveForm from "./SpecificLeaveForm";
 import Popup from "../../components/Popup";
-import Snackbar from '@material-ui/core/Snackbar';
-import MuiAlert from '@material-ui/lab/Alert';
 import TablePagination from '@material-ui/core/TablePagination';
 import {TimelineComponent} from '../../components/TimelineComponent';
 import {Timescale} from '../../components/Timescale';
@@ -44,17 +42,14 @@ const useStyles = makeStyles(theme => ({
         marginBottom:'15px',
     }
 }))
-function Alert(props) {
-    return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
 
 export const Timeline = (props) => {
     const {
-        conn,
         searchByEmployeeFilter,
         setSearchByEmployeeFilter,
         dateFilter,
-        setDateFilter
+        setDateFilter,
+        trackChange
     } = props;
     const classes = useStyles();
 
@@ -62,8 +57,6 @@ export const Timeline = (props) => {
     const [isHoliday, setIsHoliday] = useState(false);
     const [isWeekend, setIsWeekend] = useState(false);
     const [records, setRecords] = useState([]);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
     const [recordForEdit, setRecordForEdit] = useState(null)
     const [openPopup, setOpenPopup] = useState(false)
     const [page, setPage] = useState(0);
@@ -73,13 +66,21 @@ export const Timeline = (props) => {
     const [visibleRecords, setVisibleRecords] = useState([]);
 
     useEffect(() => {
-        setupSignalR();
-        // eslint-disable-next-line
-    },[conn])
-    useEffect(() => {
         fetchRecords(dateFilter);
         // eslint-disable-next-line
     }, [])
+    useEffect(() => {
+        fetchRecords(dateFilter);
+
+        if(trackChange != null){
+            setSpecialId(trackChange)
+
+            setTimeout(function () {
+                setSpecialId(0)
+            }, 6000)
+        }
+        // eslint-disable-next-line
+    }, [trackChange])
     useEffect(() => {
         if(searchByEmployeeFilter === ''){
             setVisibleRecords(records);
@@ -105,33 +106,7 @@ export const Timeline = (props) => {
         setIsWeekend(data.weekend)
         setRecords(data.attendanceActionDatePersonnelResponses)
     }
-    const setupSignalR = async () =>{
-        if((typeof conn !== "undefined") && (typeof conn.on === 'function')){
-            conn.on('newMessage', function(message) {
-                // eslint-disable-next-line
-                if(!message.hasOwnProperty('personnelName') || message.personnelName == null){
-                    setSnackbarMessage("Latest: Unknown User used action -> " + message.event);
-                }
-                else{
-                    fetchRecords(dateFilter)
-                    setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
-                    setSpecialId(message.id)
-                }
-                
-                setOpenSnackbar(true)
-                //setSpecialId(message.id)
-                setTimeout(function () {
-                    setSpecialId(0)
-                }, 6000)
-            })
-        }
-    }
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-          return;
-        }
-        setOpenSnackbar(false);
-    };
+    
     const handleFilterByDate = e =>{
         setDateFilter(e.target.value);
         if(!IsDateValid(e.target.value)) return;
@@ -343,19 +318,6 @@ export const Timeline = (props) => {
                 addOrEdit={addOrEdit}
                 deleteItem={onDelete} />
             </Popup>
-            <Snackbar
-                anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-                }}
-                open={openSnackbar}
-                autoHideDuration={6000}
-                onClose={handleClose}
-            >
-                <Alert onClose={handleClose} severity="success">
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
 
             <GeneralSnackbar open={open} setOpen={setOpen} duration={2000}
             severity="success" message="Data Loaded"  />

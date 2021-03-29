@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, {useState} from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
@@ -8,46 +8,19 @@ import {Tabular} from "./Tabular"
 import {Tabular2} from "./Tabular2"
 import {Timeline} from "./Timeline"
 
-import { ApiService } from "../../services/ApiService";
-import { HubConnectionBuilder } from '@microsoft/signalr';
-
 const useStyles = makeStyles(theme => ({
   root: {
     backgroundColor: theme.palette.background.paper,
   }
 }))
 
-export const Dashboard = () => {
+export const Dashboard = (props) => {
   const classes = useStyles()
-  const [conn, setConn] = useState()
+  const {trackChange} = props
   const [value, setValue] = useState(0)
 
   const [searchByEmployeeFilter, setSearchByEmployeeFilter] = useState('');
   const [dateFilter, setDateFilter] = useState(new Date());
-
-  useEffect(() => {
-    setupSignalR();
-  },[])
-
-  useEffect(() => {
-    return () => {
-      if((typeof conn !== "undefined") && (typeof conn.stop === 'function')) {
-        conn.stop();
-      }
-    }
-  },[conn])
-
-  const setupSignalR = async () =>{
-    let properUrl = await ApiService.get('signalr/negotiate')
-    const connection = new HubConnectionBuilder()
-        .withUrl(properUrl.url, {accessTokenFactory: () => properUrl.accessToken})
-        .withAutomaticReconnect()
-        .build();
-    connection.start()
-        .then(() => {})
-        .catch(() => console.log('Something went wrong with SignalR connection.'))
-    setConn(connection)
-  }
 
   const allTabs = ['/', '/tabular', '/tabular2'];
   return (
@@ -73,11 +46,11 @@ export const Dashboard = () => {
             render={(props) => (
               <Timeline 
                 {...props}
-                conn={conn}
                 searchByEmployeeFilter={searchByEmployeeFilter}
                 setSearchByEmployeeFilter={setSearchByEmployeeFilter}
                 dateFilter={dateFilter}
                 setDateFilter={setDateFilter}
+                trackChange={trackChange}
               />
             )}
           />
@@ -86,11 +59,11 @@ export const Dashboard = () => {
             render={(props) => (
               <Tabular
                 {...props}
-                conn={conn}
                 searchByEmployeeFilter={searchByEmployeeFilter}
                 setSearchByEmployeeFilter={setSearchByEmployeeFilter}
                 dateFilter={dateFilter}
                 setDateFilter={setDateFilter}
+                trackChange={trackChange}
               />
             )}
           />
@@ -99,11 +72,11 @@ export const Dashboard = () => {
             render={(props) => (
               <Tabular2 
                 {...props}
-                conn={conn}
                 searchByEmployeeFilter={searchByEmployeeFilter}
                 setSearchByEmployeeFilter={setSearchByEmployeeFilter}
                 startDate={dateFilter}
                 setStartDate={setDateFilter}
+                trackChange={trackChange}
               />
             )}
           />

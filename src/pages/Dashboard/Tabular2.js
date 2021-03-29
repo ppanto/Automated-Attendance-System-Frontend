@@ -8,12 +8,7 @@ import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
 import IsDateValid from '../../helpers/IsDateValid';
 import {GeneralSnackbar} from '../../components/GeneralSnackbar'
-import Snackbar from '@material-ui/core/Snackbar';
-import MuiAlert from '@material-ui/lab/Alert';
 
-function Alert(props) {
-    return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
 const useStyles = makeStyles(theme => ({
     controlsStyle:{
         paddingLeft: '6px',
@@ -24,11 +19,11 @@ const useStyles = makeStyles(theme => ({
 export const Tabular2 = (props) => {
     
     const {
-        conn,
         searchByEmployeeFilter,
         setSearchByEmployeeFilter,
         startDate,
-        setStartDate
+        setStartDate,
+        trackChange
     } = props;
     const url = 'attendance-action/by-action'
     const classes = useStyles();
@@ -39,20 +34,16 @@ export const Tabular2 = (props) => {
         aDate.setDate(aDate.getDate() + 7); // for next 7 days
         return aDate;
     });
-    const [openSnackbar, setOpenSnackbar] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
     const [open, setOpen] = useState(false)
 
-
     useEffect(() => {
-        setupSignalR();
-        // eslint-disable-next-line
-    },[conn])
-    useEffect(() => {
-        //fetchRecords(new Date(), new Date()); //why did I use this line?
         fetchRecords(startDate, endDate);
         // eslint-disable-next-line
     }, [])
+    useEffect(() => {
+        fetchRecords(startDate, endDate);
+        // eslint-disable-next-line
+    }, [trackChange])
     useEffect(() => {
         setVisibleRecords(records);
     }, [records])
@@ -110,27 +101,6 @@ export const Tabular2 = (props) => {
         { field: 'event', headerName: 'Event', width: 250 },
     ];
 
-    const setupSignalR = async () =>{
-        if((typeof conn !== "undefined") && (typeof conn.on === 'function')){
-            conn.on('newMessage', function(message) {
-                fetchRecords(startDate, endDate)
-                if(!message.hasOwnProperty('personnelName') || message.personnelName == null){
-                    setSnackbarMessage("Latest: Unknown User used action -> " + message.event);
-                }
-                else{
-                    setSnackbarMessage("Latest: " + message.personnelName + " -> " + message.event);
-                }
-                setOpenSnackbar(true)
-            })
-        }
-    }
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-          return;
-        }
-        setOpenSnackbar(false);
-    };
-
     return (
         <Paper>
             <div style={{textAlign:'center', marginTop: '20px', width: '70%', marginLeft:'auto', marginRight:'auto', marginBottom: '20px'}}>
@@ -171,20 +141,6 @@ export const Tabular2 = (props) => {
             <div style={{ height: 650, width: '95%', marginTop:'15', marginLeft:'auto', marginRight:'auto' }}>
                 <DataGrid rows={visibleRecords} columns={columns} pageSize={10} />
             </div>
-
-            <Snackbar
-                anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-                }}
-                open={openSnackbar}
-                autoHideDuration={6000}
-                onClose={handleClose}
-            >
-                <Alert onClose={handleClose} severity="success">
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
             <GeneralSnackbar open={open} setOpen={setOpen} duration={2000}
             severity="success" message="Data Loaded"  />
         </Paper>
