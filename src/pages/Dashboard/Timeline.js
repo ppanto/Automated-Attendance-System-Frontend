@@ -49,13 +49,18 @@ function Alert(props) {
 }
 
 export const Timeline = (props) => {
-    const {conn} = props;
+    const {
+        conn,
+        searchByEmployeeFilter,
+        setSearchByEmployeeFilter,
+        dateFilter,
+        setDateFilter
+    } = props;
     const classes = useStyles();
 
     const url = 'attendance-action'
     const [isHoliday, setIsHoliday] = useState(false);
     const [isWeekend, setIsWeekend] = useState(false);
-    const [dateFilter, setDateFilter] = useState(new Date());
     const [records, setRecords] = useState([]);
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -65,7 +70,6 @@ export const Timeline = (props) => {
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [specialId, setSpecialId] = useState(0);
     const [open, setOpen] = useState(false);
-    const [searchByEmployeeFilter, setSearchByEmployeeFilter] = useState('');
     const [visibleRecords, setVisibleRecords] = useState([]);
 
     useEffect(() => {

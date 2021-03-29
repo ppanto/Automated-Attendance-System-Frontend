@@ -23,16 +23,24 @@ const useStyles = makeStyles(theme => ({
 
 export const Tabular2 = (props) => {
     
-    const {conn} = props;
+    const {
+        conn,
+        searchByEmployeeFilter,
+        setSearchByEmployeeFilter,
+        startDate,
+        setStartDate
+    } = props;
     const url = 'attendance-action/by-action'
     const classes = useStyles();
     const [records, setRecords] = useState([]);
     const [visibleRecords, setVisibleRecords] = useState([]);
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date());
+    const [endDate, setEndDate] = useState(() => {
+        var aDate = new Date(startDate);
+        aDate.setDate(aDate.getDate() + 7); // for next 7 days
+        return aDate;
+    });
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [searchByEmployeeFilter, setSearchByEmployeeFilter] = useState('');
     const [open, setOpen] = useState(false)
 
 
@@ -41,7 +49,9 @@ export const Tabular2 = (props) => {
         // eslint-disable-next-line
     },[conn])
     useEffect(() => {
-        fetchRecords(new Date(), new Date());
+        //fetchRecords(new Date(), new Date()); //why did I use this line?
+        fetchRecords(startDate, endDate);
+        // eslint-disable-next-line
     }, [])
     useEffect(() => {
         setVisibleRecords(records);

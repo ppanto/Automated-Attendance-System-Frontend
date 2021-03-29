@@ -22,6 +22,9 @@ export const Dashboard = () => {
   const [conn, setConn] = useState()
   const [value, setValue] = useState(0)
 
+  const [searchByEmployeeFilter, setSearchByEmployeeFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState(new Date());
+
   useEffect(() => {
     setupSignalR();
   },[])
@@ -68,19 +71,40 @@ export const Dashboard = () => {
           <Route
             exact path={allTabs[0]}
             render={(props) => (
-              <Timeline {...props} conn={conn} />
+              <Timeline 
+                {...props}
+                conn={conn}
+                searchByEmployeeFilter={searchByEmployeeFilter}
+                setSearchByEmployeeFilter={setSearchByEmployeeFilter}
+                dateFilter={dateFilter}
+                setDateFilter={setDateFilter}
+              />
             )}
           />
           <Route
             path={allTabs[1]}
             render={(props) => (
-              <Tabular {...props} conn={conn} />
+              <Tabular
+                {...props}
+                conn={conn}
+                searchByEmployeeFilter={searchByEmployeeFilter}
+                setSearchByEmployeeFilter={setSearchByEmployeeFilter}
+                dateFilter={dateFilter}
+                setDateFilter={setDateFilter}
+              />
             )}
           />
           <Route
             path={allTabs[2]}
             render={(props) => (
-              <Tabular2 {...props} conn={conn} />
+              <Tabular2 
+                {...props}
+                conn={conn}
+                searchByEmployeeFilter={searchByEmployeeFilter}
+                setSearchByEmployeeFilter={setSearchByEmployeeFilter}
+                startDate={dateFilter}
+                setStartDate={setDateFilter}
+              />
             )}
           />
         </Switch>

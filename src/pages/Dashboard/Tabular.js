@@ -36,15 +36,19 @@ function Alert(props) {
 
 export const Tabular = (props) => {
     const classes = useStyles();
-    const {conn} = props;
+    const {
+        conn,
+        searchByEmployeeFilter,
+        setSearchByEmployeeFilter,
+        dateFilter,
+        setDateFilter
+    } = props;
 
     const url = 'attendance-action'
     const [isHoliday, setIsHoliday] = useState(false);
     const [isWeekend, setIsWeekend] = useState(false);
-    const [dateFilter, setDateFilter] = useState(new Date());
     const [records, setRecords] = useState([]);
     const [visibleRecords, setVisibleRecords] = useState([]);
-    const [searchByEmployeeFilter, setSearchByEmployeeFilter] = useState('');
     const [irregularOnly, setIrregularOnly] = useState(false);
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
