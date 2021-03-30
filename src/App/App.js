@@ -35,7 +35,8 @@ const theme = createMuiTheme({
   }
 })
 
-function App() {
+//function App() {
+  const App = () => {
   //localStorage.setItem('user', JSON.stringify({username:'Admin',token:'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBZG1pbiIsImV4cCI6MTYxOTM4OTE3N30.y7NmYVTVEZwTNA9c11TVaLzBd-x7UueSkcxH6qIaYf4ZQysjAQDpwXqsrrTL_jcFJN4Ed5l41-SrR9Ue6zj07g'}));
   return (
     <ThemeProvider theme={theme}>
@@ -43,8 +44,8 @@ function App() {
           <Switch>
             <PrivateRoute exact path='/' component={DefaultContainer}></PrivateRoute>
             <Route path='/login' component={Login}></Route>
-            <Redirect to='/login' />
-            {/* <Redirect to='/' /> */}
+            {/* <Redirect to='/login' /> */}
+            <Redirect to='/' />
           </Switch>
       </Router>
       <CssBaseline />
