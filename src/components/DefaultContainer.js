@@ -32,10 +32,10 @@ const DefaultContainer = () => {
     const [trackChange, setTrackChange] = useState(0); // id of new message
 
     const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
+        setOpenSnackbar(false);
+        if (reason === 'clickaway') { // why use this if all it does is return?
           return;
         }
-        setOpenSnackbar(false);
     };
 
     useEffect(() => {
@@ -63,6 +63,10 @@ const DefaultContainer = () => {
         if((typeof connection !== "undefined") && (typeof connection.on === 'function')){
             connection.on('newMessage', function(message) {
                 setTrackChange(message.id);
+                setTimeout(function () {
+                    setTrackChange(0)
+                }, 6000)
+
                 if(!message.hasOwnProperty('personnelName') || message.personnelName == null){
                     setSnackbarMessage("Latest: Unknown User used action -> " + message.event);
                 }
