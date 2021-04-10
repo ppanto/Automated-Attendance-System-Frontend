@@ -7,12 +7,12 @@ export const AuthService = {
     getLoggedInUserObject
 };
 
-function login(username, password){
+async function login(username, password){
     const returnObject = {
-        status: null,
-        message: ''
+        message: '',
+        success: false
     };
-    return axios({
+    return await axios({
         method: 'POST',
         url: `${BASE_PATH}/account/login`,
         data: JSON.stringify({
@@ -21,28 +21,25 @@ function login(username, password){
         })
     }).then((response) => {
         if(response.status === 200){
-            let user = {
+            localStorage.setItem('user', JSON.stringify({
                 username: username,
                 token: response.data
-            };
-            localStorage.setItem('user', JSON.stringify(user));
-        }
-        // eslint-disable-next-line
-        else if(response.status == 403){
-            returnObject.message = 'Invalid username or password';
-        }
-        returnObject.status = response.status;
-        return returnObject;
-    }).catch((err) => {
-        // should use err.response.status here instead of what I wrote at the time
-        // eslint-disable-next-line
-        if(err == 'Error: Network Error'){
-            returnObject.status = 0;
-            returnObject.message = 'The Server might be down.'
+            }));
+            returnObject.success = true;
         }
         else{
-            returnObject.status = 401;
+            returnObject.message = 'Error while authenticating.';
+        }
+        return returnObject;
+    }).catch((err) => {
+        if(err && err.response && err.response.status === 403){
             returnObject.message = 'Invalid username or password';
+        }
+        else if(err && err.response === undefined){
+            returnObject.message = 'Can not reach server. Server might be down or CORS issue.';
+        }
+        else{
+            returnObject.message = 'Error while authenticating.';
         }
         return returnObject;
     });

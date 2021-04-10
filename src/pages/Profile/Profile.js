@@ -73,45 +73,47 @@ export const Profile = () => {
         if ('oldPassword' in fieldValues){
             temp.oldPassword = fieldValues.oldPassword ? "" : "This field is required."
         }
-        if ('newPassword' in fieldValues)
+        if ('newPassword' in fieldValues){
             temp.newPassword = fieldValues.newPassword ? "" : "This field is required."
+        }
         if ('newPasswordRepeat' in fieldValues){
             temp.newPasswordRepeat = fieldValues.newPasswordRepeat ? "" : "This field is required."
         }
         setErrors({
             ...temp
         })
-
         if (fieldValues === values)
             return Object.values(temp).every(x => x === "")
     }
 
     const {
         values,
-        setValues,
+        //setValues,
         errors,
         setErrors,
         handleInputChange,
     } = useForm(initialFValues, true, validate);
 
-    const handleSubmit = e => {
+    const handleSubmit = async e => {
         e.preventDefault()
         if (validate()) {
             let isValid = true;
             let temp = { ...errors }
-            if(values.oldPassword !== user.password){
-                temp.oldPassword = "Incorrect old password."
-                isValid = false;
+
+            if(values.newPassword === values.newPasswordRepeat){
+                temp.newPasswordRepeat = ""
+                if(!(await AuthService.login(user.username, values.oldPassword)).success){
+                    temp.oldPassword = "Incorrect old password."
+                    isValid = false;
+                }
+                else temp.oldPassword = ""
             }
-            else temp.oldPassword = ""
-            if(values.newPassword !== values.newPasswordRepeat){
+            else{
                 temp.newPasswordRepeat = "Passwords are not the same.";
                 isValid = false;
             }
-            else temp.newPasswordRepeat = ""
             
             if(isValid){
-                setValues({oldPassword: '', newPassword: '', newPasswordRepeat: ''});
                 updatePassword(values.newPassword)
                 AuthService.logout()
             }
@@ -137,8 +139,7 @@ export const Profile = () => {
         }
       })(MuiAccordionSummary);
 
-    const [employee, setEmployee] = useState({fullName: '', id: 0});
-    const [user] = useState(AuthService.getLoggedInUserObject());
+    const [user, setUser] = useState({name: '', id: 0});
     const [image, setImage] = useState('')
     const [isExpanded, setIsExpanded] = useState(true);
 
@@ -148,27 +149,40 @@ export const Profile = () => {
     }, []);
 
     const fetchItems = async () => {
-        const response = await ApiService.get(`personnel/filtered?username=${user.username}`)
-        setEmployee(response);
-        setImage(`${BASE_PATH}/personnel/image/get/${response.id}?${Date.now()}`);
+        let username = AuthService.getLoggedInUserObject().username;
+        const response = await ApiService.get(`user/filtered/by-username?username=${username}`)
+        let name = null;
+        if(response.fullName !== '') name = response.fullName;
+        else name = response.username;
+        setUser({
+            ...response,
+            name
+        });
+        if(response.personnelId !== null){
+            setImage(`${BASE_PATH}/personnel/image/get/${response.personnelId}?${Date.now()}`)
+        }
     };
 
     const postImage = async (imageData, employeeId, hash) => {
         await ApiService.postXData('personnel/image' ,imageData, employeeId)
-        setImage(`${BASE_PATH}/personnel/image/get/${employee.id}?${hash}`);
+        setImage(`${BASE_PATH}/personnel/image/get/${employeeId}?${hash}`);
     }
     const onDrop = useCallback(acceptedFiles => {
-        const formData = new FormData();
-        formData.append("file", acceptedFiles[0]);
-        postImage(formData, employee.id, new Date());
+        if(user.personnelId !== null){
+            const formData = new FormData();
+            formData.append("file", acceptedFiles[0]);
+            postImage(formData, user.personnelId, new Date());
+        }
+        else{
+            console.log("Can not upload image. No employee connected to this account.");
+        }
         // eslint-disable-next-line
-      }, [employee])
+      }, [user])
 
     const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
-
     return (
         <Paper className={classes.pageContent}>
-            <h2 className={classes.centeredContent}>{employee.fullName}</h2>
+            <h2 className={classes.centeredContent}>{user.name}</h2>
             <div className={classes.root}>
             <Accordion expanded={isExpanded}>
                 <AccordionSummary

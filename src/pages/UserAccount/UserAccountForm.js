@@ -29,10 +29,10 @@ export default function DepartmentForm(props) {
             temp.username = fieldValues.username ? "" : "This field is required."
         if ('password' in fieldValues)
             temp.password = fieldValues.password ? "" : "This field is required."
-        if ('personnelId' in fieldValues){
-            // eslint-disable-next-line
-            temp.personnelId = fieldValues.personnelId.length != 0 ? "" : "This field is required."
-        }
+        // if ('personnelId' in fieldValues){
+        //     // eslint-disable-next-line
+        //     temp.personnelId = fieldValues.personnelId.length != 0 ? "" : "This field is required."
+        //}
         setErrors({
             ...temp
         })

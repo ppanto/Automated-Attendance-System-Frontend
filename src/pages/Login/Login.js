@@ -28,7 +28,7 @@ export const Login = (props) => {
 
         AuthService.login(username, password)
             .then((returnObj) => {
-                if(returnObj.status === 200){
+                if(returnObj.success === true){
                     const { from } = window.location.state || { from: { pathname: "/" } };
                     props.history.push(from);
                 }

@@ -17,6 +17,7 @@ function checkIfExpiredCredsAndLogout(err){
         AuthService.logout();
     }
 }
+
 async function get(url){
     const userObj = AuthService.getLoggedInUserObject();
     return await axios({
