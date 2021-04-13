@@ -39,8 +39,14 @@ export default function EmployeeForm(props) {
             temp.firstName = fieldValues.firstName ? "" : "This field is required."
         if ('lastName' in fieldValues)
             temp.lastName = fieldValues.lastName ? "" : "This field is required."
-        if ('email' in fieldValues)
-            temp.email = (/$^|.+@.+..+/).test(fieldValues.email) ? "" : "Email is not valid."
+        if ('email' in fieldValues) {
+            if(fieldValues.email) {
+                temp.email = (/$^|.+@.+..+/).test(fieldValues.email) ? "" : "Email is not valid."
+            }
+            else{
+                temp.email = ""
+            }
+        }
         setErrors({
             ...temp
         })

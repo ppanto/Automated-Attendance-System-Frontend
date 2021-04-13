@@ -20,7 +20,6 @@ export function useForm(initialFValues, validateOnChange = false, validate) {
         setErrors({})
     }
 
-
     return {
         values,
         setValues,
@@ -28,7 +27,6 @@ export function useForm(initialFValues, validateOnChange = false, validate) {
         setErrors,
         handleInputChange,
         resetForm
-
     }
 }
 
