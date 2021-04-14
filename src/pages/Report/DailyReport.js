@@ -129,7 +129,7 @@ export const DailyReport = () => {
                 </div>
                 <div>
                     <DayStatusChart 
-                    In = {records.currentlyAtWork.length}
+                    In = {records.checkedIn}
                     yetToCheckIn = {records.yetToCheckIn}
                     checkedOut = {records.checkedOut}
                     />
